@@ -1,5 +1,4 @@
-// This variable is exposed by the <canvas> element
-declare var _: HTMLCanvasElement;
+declare let _: HTMLCanvasElement;
 
 declare module "*.png";
 

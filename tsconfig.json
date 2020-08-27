@@ -12,5 +12,5 @@
       "~*": ["./*"]
     }
   },
-  "include": ["src/**/*", "typeDefs.d.ts"]
+  "include": ["src/**/*", "custom.d.ts"]
 }

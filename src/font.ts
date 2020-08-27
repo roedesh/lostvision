@@ -1,7 +1,8 @@
 // Taken from https://github.com/darkwebdev/tinyfont.js
-// Removed some unneeded code
+// Removed some unneeded code to save space
 import { Tiny2dContext } from "./types";
 
+// eslint-disable-next-line no-sparse-arrays
 export const chars = [
   ...Array(33),
 
@@ -79,7 +80,14 @@ export const chars = [
   //, // ~
 ];
 
-export const renderText = (ctx: Tiny2dContext, string, x, y, size, color = "white") => {
+export const renderText = (
+  ctx: Tiny2dContext,
+  string: string,
+  x: number,
+  y: number,
+  size: number,
+  color = "white"
+): void => {
   const bin2arr = (bin, width) => bin.match(RegExp(`.{${width}}`, "g"));
   const isNumber = (code) => code > 0;
 
