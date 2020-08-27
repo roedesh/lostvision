@@ -10,15 +10,15 @@
 import {
   JUMP_HEIGHT,
   MAX_GRAVITY,
+  MAX_SPEED,
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   STEP,
-  SPEED,
   TILE_SIZE,
 } from "./constants";
 import { renderText } from "./font";
 import { levelOne } from "./maps";
-import { Keys, Entity, ScreenType, Tiny2dContext } from "./types";
+import { Direction, Keys, Entity, ScreenType, Tiny2dContext } from "./types";
 
 //-------------------------------------------------------------------------
 // GAME LOOP
@@ -62,29 +62,45 @@ const gameLoop = () => {
 
 //-------------------------------------------------------------------------
 // GAME FUNCTIONS
+//
+// Functions that contain part of the game logic.
 //-------------------------------------------------------------------------
 
 const updatePlayer = () => {
-  const dir = keys.r || 0 - keys.l || 0;
+  const direction = keys.r || 0 - keys.l || 0;
+
   if (!jumpSpeed && keys._ && !isFreeSpace(player.x, player.y + 1)) {
     gravity = 0;
     jumpSpeed = JUMP_HEIGHT;
   }
-  let i: number;
+  let index: number;
 
   // Move player horizontally
-  for (i = SPEED; i > 0; i--) {
-    if (isFreeSpace(player.x + i * dir, player.y)) {
-      player.x += i * dir;
+  moveSpeed +=
+    direction != Direction.NONE && moveSpeed < MAX_SPEED
+      ? 1
+      : moveSpeed > 0
+      ? -1
+      : 0;
+
+  // If user is pressing left or right, use current direction
+  // Otherwise use last known direction to slow the player down
+  const dirToUse = direction != Direction.NONE ? direction : lastDirection;
+
+  for (index = moveSpeed; index > 0; index--) {
+    if (isFreeSpace(player.x + index * direction, player.y)) {
+      player.x += index * dirToUse;
       break;
     }
   }
 
+  lastDirection = direction;
+
   // Handle jumping and falling
   if (jumpSpeed > 0) {
-    for (i = jumpSpeed; i > 0; i--) {
-      if (isFreeSpace(player.x, player.y - i)) {
-        player.y -= i;
+    for (index = jumpSpeed; index > 0; index--) {
+      if (isFreeSpace(player.x, player.y - index)) {
+        player.y -= index;
         break;
       }
     }
@@ -95,9 +111,9 @@ const updatePlayer = () => {
         ? gravity + 1
         : 0;
 
-    for (i = gravity; i > 0; i--) {
-      if (isFreeSpace(player.x, player.y + i)) {
-        player.y += i;
+    for (index = gravity; index > 0; index--) {
+      if (isFreeSpace(player.x, player.y + index)) {
+        player.y += index;
         break;
       }
     }
@@ -215,6 +231,8 @@ let deltaTime = 0;
 let hideText = false; // Flag for flashing text
 let gravity = 0;
 let jumpSpeed = 0;
+let moveSpeed = 0;
+let lastDirection: Direction = 0;
 let now,
   last = getTimestamp();
 let screen: ScreenType = ScreenType.MAIN_MENU;

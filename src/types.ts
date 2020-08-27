@@ -16,6 +16,12 @@ export type Entity = {
   y: number;
   width: number;
   height: number;
+};
+
+export const enum Direction {
+  LEFT = -1,
+  NONE = 0,
+  RIGHT = 1,
 }
 
 export const enum ScreenType {
