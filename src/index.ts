@@ -10,7 +10,6 @@
 import {
   JUMP_VELOCITY,
   MAX_SPEED,
-  MAX_UPDATE_STEPS,
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   STEP,
@@ -24,14 +23,13 @@ import { Direction, Keys, Entity, ScreenType, Tiny2dContext } from "./types";
 // GAME LOOP
 //-------------------------------------------------------------------------
 
-const gameLoop = (timestamp) => {
-  delta += timestamp - lastFrameTimeMs;
-  lastFrameTimeMs = timestamp;
+const gameLoop = (newTime) => {
+  let frameTime = newTime - currentTime;
+  currentTime = newTime;
 
-  let updateStepCount = 0;
+  while (frameTime > 0.0) {
+    const delta = Math.min(frameTime, STEP);
 
-  while (delta >= STEP) {
-    // Main game loop
     switch (screen) {
       /**
        * Main Menu
@@ -54,11 +52,7 @@ const gameLoop = (timestamp) => {
       timer64++;
     }
 
-    delta -= STEP;
-
-    if (++updateStepCount >= MAX_UPDATE_STEPS) {
-      delta = 0;
-    }
+    frameTime -= delta;
   }
 
   render();
@@ -241,10 +235,9 @@ const keys: Keys = {};
 const player = createEntity(300, 300, 16, 16);
 
 let currentMap;
-let delta = 0;
+let currentTime: number;
 let hideText = false; // Flag for flashing text
 let lastDirection: Direction = 0;
-let lastFrameTimeMs = 0;
 let moveSpeed = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
 let timer64 = 0; // Get incremented every frame
@@ -263,4 +256,5 @@ onkeydown = onkeyup = (event) =>
     event.type[3] < "u"
   ));
 
+currentTime = getTimestamp();
 requestAnimationFrame(gameLoop);
