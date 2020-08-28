@@ -14,6 +14,10 @@ export type Keys = {
 export type Entity = {
   x: number;
   y: number;
+  renderX: number;
+  renderY: number;
+  oldX: number;
+  oldY: number;
   velocityX?: number;
   velocityY?: number;
   width: number;
@@ -30,31 +34,6 @@ export const enum ScreenType {
   MAIN_MENU,
   LEVEL,
 }
-
-export const enum SolidType {
-  INTANGIBLE,
-  SOLID,
-  SLOPE,
-}
-
-export const enum TileType {
-  VOID,
-  WALL,
-  SLOPE_45_LEFT,
-  SLOPE_45_RIGHT,
-  SLOPE_MINUS_45_LEFT,
-  SLOPE_MINUS_45_RIGHT,
-}
-
-export type Tiles = {
-  [key: string]: Tile;
-};
-
-export type Tile = {
-  type: TileType;
-  solidType: SolidType;
-  calculateSolidity?: (x: number, y: number) => boolean;
-};
 
 export interface Tiny2dContext extends CanvasRenderingContext2D {
   /**
