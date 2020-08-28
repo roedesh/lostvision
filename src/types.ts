@@ -14,6 +14,8 @@ export type Keys = {
 export type Entity = {
   x: number;
   y: number;
+  velocityX?: number;
+  velocityY?: number;
   width: number;
   height: number;
 };

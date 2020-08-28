@@ -8,8 +8,7 @@
 //  Author: Ruud Schroën
 
 import {
-  JUMP_HEIGHT,
-  MAX_GRAVITY,
+  JUMP_VELOCITY,
   MAX_SPEED,
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
@@ -24,13 +23,13 @@ import { Direction, Keys, Entity, ScreenType, Tiny2dContext } from "./types";
 // GAME LOOP
 //-------------------------------------------------------------------------
 
-const gameLoop = () => {
-  now = getTimestamp();
-  deltaTime += Math.min(1, (now - last) / 1000);
+const gameLoop = (timestamp) => {
+  delta += timestamp - lastFrameTimeMs;
+  lastFrameTimeMs = timestamp;
 
-  while (deltaTime > STEP) {
-    deltaTime -= STEP;
+  let updateStepCount = 0;
 
+  while (delta >= STEP) {
     // Main game loop
     switch (screen) {
       /**
@@ -43,7 +42,7 @@ const gameLoop = () => {
         }
         break;
       case ScreenType.LEVEL: {
-        updatePlayer();
+        updatePlayer(delta);
       }
     }
 
@@ -53,10 +52,15 @@ const gameLoop = () => {
     } else {
       timer64++;
     }
+
+    delta -= STEP;
+
+    if (++updateStepCount >= 240) {
+      delta = 0;
+    }
   }
 
   render();
-  last = now;
   requestAnimationFrame(gameLoop);
 };
 
@@ -66,14 +70,13 @@ const gameLoop = () => {
 // Functions that contain part of the game logic.
 //-------------------------------------------------------------------------
 
-const updatePlayer = () => {
+const updatePlayer = (delta) => {
+  let index: number;
   const direction = keys.r || 0 - keys.l || 0;
 
-  if (!jumpSpeed && keys._ && !isFreeSpace(player.x, player.y + 1)) {
-    gravity = 0;
-    jumpSpeed = JUMP_HEIGHT;
+  if (player.velocityY == 0 && keys._ && !isFreeSpace(player.x, player.y + 1)) {
+    player.velocityY = JUMP_VELOCITY;
   }
-  let index: number;
 
   // Move player horizontally
   moveSpeed +=
@@ -96,24 +99,25 @@ const updatePlayer = () => {
 
   lastDirection = direction;
 
-  // Handle jumping and falling
-  if (jumpSpeed > 0) {
-    for (index = jumpSpeed; index > 0; index--) {
-      if (isFreeSpace(player.x, player.y - index)) {
-        player.y -= index;
+  if (isFreeSpace(player.x, player.y + 0.01 * delta)) {
+    player.velocityY += 0.01;
+  } else if (player.velocityY > 0) {
+    player.velocityY = 0;
+  }
+
+  if (player.velocityY > 0) {
+    for (index = player.velocityY; index > 0; index -= 0.01) {
+      const newY = Math.round(player.y + index * delta);
+      if (isFreeSpace(player.x, newY)) {
+        player.y = newY;
         break;
       }
     }
-    jumpSpeed--;
-  } else {
-    gravity =
-      gravity != MAX_GRAVITY && isFreeSpace(player.x, player.y + 1)
-        ? gravity + 1
-        : 0;
-
-    for (index = gravity; index > 0; index--) {
-      if (isFreeSpace(player.x, player.y + index)) {
-        player.y += index;
+  } else if (player.velocityY < 0) {
+    for (index = player.velocityY; index < 0; index += 0.01) {
+      const newY = Math.round(player.y + index * delta);
+      if (isFreeSpace(player.x, newY)) {
+        player.y = newY;
         break;
       }
     }
@@ -173,11 +177,20 @@ const render = () => {
 // UTILITIES
 //-------------------------------------------------------------------------
 
-export const createEntity = (x, y, width, height): Entity => ({
+export const createEntity = (
+  x,
+  y,
+  width,
+  height,
+  velocityX = 0,
+  velocityY = 0
+): Entity => ({
   x: x,
   y: y,
   width: width,
   height: height,
+  velocityX,
+  velocityY,
 });
 
 const loadMap = (map) => {
@@ -227,14 +240,11 @@ const keys: Keys = {};
 const player = createEntity(300, 300, 16, 16);
 
 let currentMap;
-let deltaTime = 0;
+let delta = 0;
 let hideText = false; // Flag for flashing text
-let gravity = 0;
-let jumpSpeed = 0;
-let moveSpeed = 0;
 let lastDirection: Direction = 0;
-let now,
-  last = getTimestamp();
+let lastFrameTimeMs = 0;
+let moveSpeed = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
 let timer64 = 0; // Get incremented every frame
 let walls: Entity[] = [];
@@ -252,4 +262,4 @@ onkeydown = onkeyup = (event) =>
     event.type[3] < "u"
   ));
 
-gameLoop();
+requestAnimationFrame(gameLoop);

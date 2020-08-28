@@ -6,10 +6,10 @@ export const NATIVE_HEIGHT = 768;
 export const TILE_SIZE = 16;
 
 // Movement
-export const JUMP_HEIGHT = 13;
+export const JUMP_VELOCITY = -0.2;
 export const MAX_GRAVITY = 50;
 export const MAX_SPEED = 3;
 
 // FPS
 export const FPS = 60;
-export const STEP = 1 / FPS;
+export const STEP = 1000 / FPS;
