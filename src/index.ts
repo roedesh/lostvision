@@ -10,6 +10,7 @@
 import {
   JUMP_VELOCITY,
   MAX_SPEED,
+  MAX_UPDATE_STEPS,
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   STEP,
@@ -55,7 +56,7 @@ const gameLoop = (timestamp) => {
 
     delta -= STEP;
 
-    if (++updateStepCount >= 240) {
+    if (++updateStepCount >= MAX_UPDATE_STEPS) {
       delta = 0;
     }
   }
