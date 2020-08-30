@@ -1,3 +1,23 @@
+export type Collision = {
+  bottom: boolean;
+  left: boolean;
+  right: boolean;
+  top: boolean;
+};
+
+export type Entity = {
+  x: number;
+  y: number;
+  oldX: number;
+  oldY: number;
+  renderX: number;
+  renderY: number;
+  velocityX: number;
+  velocityY: number;
+  width: number;
+  height: number;
+};
+
 export type Keys = {
   E?: number; // E
   R?: number; // R
@@ -11,35 +31,37 @@ export type Keys = {
   r?: number; // Right
 };
 
-export type Entity = {
-  x: number;
-  y: number;
-  renderX: number;
-  renderY: number;
-  oldX: number;
-  oldY: number;
-  velocityX?: number;
-  velocityY?: number;
-  width: number;
-  height: number;
-};
-
-export const enum Direction {
-  LEFT = -1,
-  NONE = 0,
-  RIGHT = 1,
-}
-
 export const enum ScreenType {
   MAIN_MENU,
-  LEVEL,
+  GAME_LEVEL,
 }
 
 export interface Tiny2dContext extends CanvasRenderingContext2D {
   /**
+   * Alias to beginPath
+   */
+  ba(): void;
+
+  /**
+   * Alias to drawImage
+   */
+  da(
+    image: CanvasImageSource,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number
+  ): void;
+
+  /**
    * Alias to fillRect
    */
   fc(x: number, y: number, w: number, h: number): void;
+
+  /**
+   * Alias to rect
+   */
+  rc(x: number, y: number, w: number, h: number): void;
 
   /**
    * Alias to setTransform
