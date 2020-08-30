@@ -15,7 +15,6 @@ import {
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   PLAYER_WEIGHT,
-  STEP,
 } from "./constants";
 import createEntity from "./entity";
 import { renderText } from "./font";
@@ -132,10 +131,10 @@ const render = (lagOffset: number) => {
   if (_.width != innerW || _.height != innerH) {
     const deviceWidth = innerW * dpr;
     const deviceHeight = innerH * dpr;
-    const scale = Math.round(Math.min(
-      deviceWidth / NATIVE_WIDTH,
-      deviceHeight / NATIVE_HEIGHT
-    ) * 10) / 10;
+    const scale =
+      Math.round(
+        Math.min(deviceWidth / NATIVE_WIDTH, deviceHeight / NATIVE_HEIGHT) * 10
+      ) / 10;
 
     _.width = innerW;
     _.height = innerH;
@@ -164,14 +163,14 @@ const render = (lagOffset: number) => {
   switch (screen) {
     case ScreenType.MAIN_MENU:
       renderText(bufferContext, "EYES NOT FOUND", 68, 180, 80);
+      renderText(bufferContext, "PRESS SPACE TO START", 320, 310, 24);
       renderText(
         bufferContext,
-        "PRESS SPACE TO START",
-        320,
-        310,
-        24
+        "CREATED BY RUUD SCHROEN",
+        30,
+        NATIVE_HEIGHT - 44,
+        14
       );
-      renderText(bufferContext, "CREATED BY RUUD SCHROEN", 30, NATIVE_HEIGHT - 44, 14);
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
       break;
     case ScreenType.GAME_LEVEL:

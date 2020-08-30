@@ -12,7 +12,3 @@ export const JUMP_VELOCITY = -5;
 export const MAX_SPEED = 3;
 export const PLAYER_WEIGHT = 0.2;
 
-// Framerate
-export const FPS = 60;
-export const STEP = 1000 / FPS;
-
