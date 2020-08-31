@@ -86,7 +86,7 @@ export const renderText = (
   x: number,
   y: number,
   size: number,
-  color = "white"
+  color = "lightgray"
 ): void => {
   const bin2arr = (bin, width) => bin.match(RegExp(`.{${width}}`, "g"));
   const isNumber = (code) => code > 0;
@@ -118,5 +118,8 @@ export const renderText = (
     return charX + (width + 1) * pixelSize;
   };
 
+  const oldComposition = ctx.globalCompositeOperation;
+  ctx.globalCompositeOperation = "lighter";
   [...string].reduce(renderChar, 0);
+  ctx.globalCompositeOperation = oldComposition;
 };

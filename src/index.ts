@@ -124,34 +124,26 @@ const render = (lagOffset: number) => {
   player.renderX = (player.x - player.oldX) * lagOffset + player.oldX;
   player.renderY = (player.y - player.oldY) * lagOffset + player.oldY;
 
-  const innerW = innerWidth,
-    innerH = innerHeight,
+  if (
+    innerW != innerWidth ||
+    innerH != innerHeight ||
+    dpr != (devicePixelRatio || 1)
+  ) {
+    innerW = innerWidth;
+    innerH = innerHeight;
     dpr = devicePixelRatio || 1;
 
-  if (_.width != innerW || _.height != innerH) {
-    const deviceWidth = innerW * dpr;
-    const deviceHeight = innerH * dpr;
-    const scale =
-      Math.round(
-        Math.min(deviceWidth / NATIVE_WIDTH, deviceHeight / NATIVE_HEIGHT) * 10
-      ) / 10;
+    const gameWidth = NATIVE_WIDTH * dpr;
+    const gameHeight = NATIVE_HEIGHT * dpr;
 
-    _.width = innerW;
-    _.height = innerH;
-    buffer.width = deviceWidth;
-    buffer.height = deviceHeight;
-    bufferContext.globalCompositeOperation = "lighter";
-    bufferContext.setTransform(
-      scale,
-      0,
-      0,
-      scale,
-      (deviceWidth - NATIVE_WIDTH * scale) / 2,
-      (deviceHeight - NATIVE_HEIGHT * scale) / 2
-    );
-    bufferContext.translate(0.5, 0.5);
-
+    _.width = buffer.width = gameWidth;
+    _.height = buffer.height = gameHeight;
+    const scaleX = innerW / gameWidth;
+    const scaleY = innerH / gameHeight;
+    const scaleToFit = Math.min(scaleX, scaleY);
+    _.style.transform = `scale(${scaleToFit}) translate(-50%,-50%)`;
     context.imageSmoothingEnabled = false;
+    bufferContext.scale(dpr, dpr);
   } else {
     context.clearRect(0, 0, innerW, innerH);
     bufferContext.clearRect(0, 0, innerW * dpr, innerH * dpr);
@@ -174,8 +166,11 @@ const render = (lagOffset: number) => {
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
       break;
     case ScreenType.GAME_LEVEL:
-      bufferContext.fillStyle = "white";
+      bufferContext.fillStyle = "lightgray";
+      bufferContext.strokeStyle = "lightgray";
       bufferContext.beginPath();
+      bufferContext.moveTo(0, 32);
+      bufferContext.lineTo(NATIVE_WIDTH, 32);
       bufferContext.rc(player.x, player.y, player.width, player.height);
       for (let i = 0; i < boxes.length; i++) {
         bufferContext.rc(
@@ -186,9 +181,10 @@ const render = (lagOffset: number) => {
         );
       }
       bufferContext.fill();
+      bufferContext.stroke();
   }
 
-  context.da(buffer, 0, 0, innerW, innerH);
+  context.da(buffer, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
 };
 
 //-------------------------------------------------------------------------
@@ -232,7 +228,9 @@ const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
 
 let accumulator = 0;
-let lag = 0;
+let dpr = 0;
+let innerW,
+  innerH = 0;
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
