@@ -40,7 +40,8 @@ const gameLoop = (currentTime: number): void => {
     accumulator -= dt;
   }
 
-  render(accumulator / dt);
+  interpolate(accumulator / dt)
+  render();
 };
 
 //-------------------------------------------------------------------------
@@ -120,31 +121,34 @@ const updatePlayer = () => {
 // RENDER LOOP
 //-------------------------------------------------------------------------
 
-const render = (lagOffset: number) => {
-  player.renderX = (player.x - player.oldX) * lagOffset + player.oldX;
-  player.renderY = (player.y - player.oldY) * lagOffset + player.oldY;
+const render = () => {
+  const newDpr = devicePixelRatio || 1;
 
-  if (
-    innerW != innerWidth ||
-    innerH != innerHeight ||
-    dpr != (devicePixelRatio || 1)
-  ) {
+  // If the screen size or device pixel ratio has changed,
+  // re-initialize the canvases.
+  if (innerW != innerWidth || innerH != innerHeight || dpr != newDpr) {
     innerW = innerWidth;
     innerH = innerHeight;
     dpr = devicePixelRatio || 1;
 
     const gameWidth = NATIVE_WIDTH * dpr;
     const gameHeight = NATIVE_HEIGHT * dpr;
-
     _.width = buffer.width = gameWidth;
     _.height = buffer.height = gameHeight;
+
+    // Use CSS transforms to leverage the GPU
     const scaleX = innerW / gameWidth;
     const scaleY = innerH / gameHeight;
     const scaleToFit = Math.min(scaleX, scaleY);
     _.style.transform = `scale(${scaleToFit}) translate(-50%,-50%)`;
-    context.imageSmoothingEnabled = false;
+
+    // Enable image smoothing for low res screens
+    context.imageSmoothingEnabled = scaleToFit < 1;
+
+    // Set canvas drawing scale
     bufferContext.scale(dpr, dpr);
   } else {
+    // If the canvas was not reinitialized, just clear it
     context.clearRect(0, 0, innerW, innerH);
     bufferContext.clearRect(0, 0, innerW * dpr, innerH * dpr);
   }
@@ -187,6 +191,11 @@ const render = (lagOffset: number) => {
   context.da(buffer, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
 };
 
+const interpolate = (lagOffset: number) => {
+  player.renderX = (player.x - player.oldX) * lagOffset + player.oldX;
+  player.renderY = (player.y - player.oldY) * lagOffset + player.oldY;
+};
+
 //-------------------------------------------------------------------------
 // UTILITIES
 //-------------------------------------------------------------------------
@@ -221,8 +230,10 @@ const collision = (e1: Entity, e2: Entity): Collision => {
 
 const boxes: Entity[] = [];
 const buffer = document.createElement("canvas");
-const bufferContext = buffer.getContext("2d") as Tiny2dContext;
-const context = _.getContext("2d") as Tiny2dContext;
+const bufferContext = buffer.getContext("2d", {
+  alpha: false,
+}) as Tiny2dContext;
+const context = _.getContext("2d", { alpha: false }) as Tiny2dContext;
 const dt = 0.01;
 const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
