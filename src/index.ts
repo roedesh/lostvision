@@ -21,6 +21,8 @@ import { renderText } from "./font";
 import { getMap, getBoxes } from "./maps";
 import { Collision, Keys, Entity, ScreenType, Tiny2dContext } from "./types";
 
+import heartPng from "../assets/heart.png";
+
 //-------------------------------------------------------------------------
 // MAIN LOOP
 //-------------------------------------------------------------------------
@@ -166,7 +168,7 @@ const render = () => {
 
   switch (screen) {
     case ScreenType.MAIN_MENU:
-      renderText(bufferContext, "EYES NOT FOUND", 68, 180, 80);
+      renderText(bufferContext, "LOST VISION", 130, 180, 80);
       renderText(bufferContext, "PRESS ENTER TO START", 320, 310, 24);
       renderText(
         bufferContext,
@@ -194,6 +196,12 @@ const render = () => {
       }
       bufferContext.fill();
       bufferContext.stroke();
+
+      
+      bufferContext.drawImage(heartImage, 150, 6);
+      renderText(bufferContext, `X`, 170, 11, 8);
+      renderText(bufferContext, `3`, 184, 8, 14);
+      renderText(bufferContext, `TIME: 00:00`, 8, 8, 14);
   }
 
   context.da(bufferCanvas, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
@@ -245,6 +253,8 @@ const context = _.getContext("2d", { alpha: false }) as Tiny2dContext;
 const dt = 0.01;
 const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
+const heartImage = new Image();
+heartImage.src = heartPng;
 
 let accumulator = 0;
 let currentMap = [];
