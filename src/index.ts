@@ -59,6 +59,9 @@ const update = () => {
       boxes = getBoxes(currentMap);
       break;
     case ScreenType.GAME_LEVEL:
+      if (++counter % 120 == 0) {
+        elapsedSeconds++;
+      }
       updatePlayer();
   }
 
@@ -179,29 +182,28 @@ const render = () => {
       );
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
       break;
-    case ScreenType.GAME_LEVEL:
+    case ScreenType.GAME_LEVEL: {
       bufferContext.fillStyle = "lightgray";
       bufferContext.strokeStyle = "lightgray";
       bufferContext.beginPath();
       bufferContext.moveTo(0, 32);
       bufferContext.lineTo(NATIVE_WIDTH, 32);
       bufferContext.rc(player.x, player.y, player.width, player.height);
-      for (let i = 0; i < boxes.length; i++) {
-        bufferContext.rc(
-          boxes[i].x,
-          boxes[i].y,
-          boxes[i].width,
-          boxes[i].height
-        );
+      for (const box of boxes) {
+        bufferContext.rc(box.x, box.y, box.width, box.height);
       }
       bufferContext.fill();
       bufferContext.stroke();
 
-      
-      bufferContext.drawImage(heartImage, 150, 6);
-      renderText(bufferContext, `X`, 170, 11, 8);
-      renderText(bufferContext, `3`, 184, 8, 14);
-      renderText(bufferContext, `TIME: 00:00`, 8, 8, 14);
+      const timeString = new Date(elapsedSeconds * 1000)
+        .toISOString()
+        .substr(11, 8);
+      renderText(bufferContext, `TIME: ${timeString}`, 8, 8, 14);
+
+      bufferContext.drawImage(heartImage, 175, 6);
+      renderText(bufferContext, "X", 195, 11, 8);
+      renderText(bufferContext, `3`, 208, 8, 14);
+    }
   }
 
   context.da(bufferCanvas, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
@@ -244,7 +246,6 @@ const collision = (e1: Entity, e2: Entity): Collision => {
 // INITIALIZATION
 //-------------------------------------------------------------------------
 
-let boxes: Entity[] = [];
 const bufferCanvas = document.createElement("canvas");
 const bufferContext = bufferCanvas.getContext("2d", {
   alpha: false,
@@ -253,11 +254,16 @@ const context = _.getContext("2d", { alpha: false }) as Tiny2dContext;
 const dt = 0.01;
 const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
+
+// Assets
 const heartImage = new Image();
 heartImage.src = heartPng;
 
 let accumulator = 0;
+let boxes: Entity[] = [];
+let counter = 0;
 let currentMap = [];
+let elapsedSeconds = 0;
 let dpr = 0;
 let innerW,
   innerH = 0;
