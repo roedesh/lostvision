@@ -31,6 +31,8 @@ export type Keys = {
   r?: number; // Right
 };
 
+export type Map2D = number[][];
+
 export const enum ScreenType {
   MAIN_MENU,
   GAME_LEVEL,

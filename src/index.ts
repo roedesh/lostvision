@@ -18,6 +18,7 @@ import {
 } from "./constants";
 import createEntity from "./entity";
 import { renderText } from "./font";
+import { getMap, getBoxes } from "./maps";
 import { Collision, Keys, Entity, ScreenType, Tiny2dContext } from "./types";
 
 //-------------------------------------------------------------------------
@@ -40,7 +41,7 @@ const gameLoop = (currentTime: number): void => {
     accumulator -= dt;
   }
 
-  interpolate(accumulator / dt)
+  interpolate(accumulator / dt);
   render();
 };
 
@@ -52,6 +53,8 @@ const update = () => {
   switch (screen) {
     case ScreenType.MAIN_MENU:
       if (keys.e) screen = ScreenType.GAME_LEVEL;
+      currentMap = getMap(level);
+      boxes = getBoxes(currentMap);
       break;
     case ScreenType.GAME_LEVEL:
       updatePlayer();
@@ -102,14 +105,17 @@ const updatePlayer = () => {
       player.velocityY = 0;
     }
 
-    if (boxCollision?.left && player.x + player.velocityX < box.x + box.width) {
+    if (
+      boxCollision?.left &&
+      player.x + player.velocityX < box.x + box.width + player.velocityX
+    ) {
       player.x = box.x + box.width;
       player.velocityX = 0;
     }
 
     if (
       boxCollision?.right &&
-      player.x + player.width < box.x + player.velocityX
+      player.x + player.width + player.velocityX > box.x + player.velocityX
     ) {
       player.x = box.x - player.width;
       player.velocityX = 0;
@@ -122,19 +128,21 @@ const updatePlayer = () => {
 //-------------------------------------------------------------------------
 
 const render = () => {
-  const newDpr = devicePixelRatio || 1;
+  const newInnerW = innerWidth,
+    newInnerH = innerHeight,
+    newDpr = devicePixelRatio || 1;
 
   // If the screen size or device pixel ratio has changed,
   // re-initialize the canvases.
-  if (innerW != innerWidth || innerH != innerHeight || dpr != newDpr) {
-    innerW = innerWidth;
-    innerH = innerHeight;
-    dpr = devicePixelRatio || 1;
+  if (innerW != newInnerW || innerH != newInnerH || dpr != newDpr) {
+    innerW = newInnerW;
+    innerH = newInnerH;
+    dpr = newDpr;
 
     const gameWidth = NATIVE_WIDTH * dpr;
     const gameHeight = NATIVE_HEIGHT * dpr;
-    _.width = buffer.width = gameWidth;
-    _.height = buffer.height = gameHeight;
+    _.width = bufferCanvas.width = gameWidth;
+    _.height = bufferCanvas.height = gameHeight;
 
     // Use CSS transforms to leverage the GPU
     const scaleX = innerW / gameWidth;
@@ -159,7 +167,7 @@ const render = () => {
   switch (screen) {
     case ScreenType.MAIN_MENU:
       renderText(bufferContext, "EYES NOT FOUND", 68, 180, 80);
-      renderText(bufferContext, "PRESS SPACE TO START", 320, 310, 24);
+      renderText(bufferContext, "PRESS ENTER TO START", 320, 310, 24);
       renderText(
         bufferContext,
         "CREATED BY RUUD SCHROEN",
@@ -188,7 +196,7 @@ const render = () => {
       bufferContext.stroke();
   }
 
-  context.da(buffer, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
+  context.da(bufferCanvas, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
 };
 
 const interpolate = (lagOffset: number) => {
@@ -228,9 +236,9 @@ const collision = (e1: Entity, e2: Entity): Collision => {
 // INITIALIZATION
 //-------------------------------------------------------------------------
 
-const boxes: Entity[] = [];
-const buffer = document.createElement("canvas");
-const bufferContext = buffer.getContext("2d", {
+let boxes: Entity[] = [];
+const bufferCanvas = document.createElement("canvas");
+const bufferContext = bufferCanvas.getContext("2d", {
   alpha: false,
 }) as Tiny2dContext;
 const context = _.getContext("2d", { alpha: false }) as Tiny2dContext;
@@ -239,25 +247,22 @@ const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
 
 let accumulator = 0;
+let currentMap = [];
 let dpr = 0;
 let innerW,
   innerH = 0;
+let level = 0;
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
 
-// dimensions
-boxes.push(createEntity(0, NATIVE_HEIGHT - 50, NATIVE_WIDTH, 50));
-boxes.push(createEntity(0, NATIVE_HEIGHT - 100, 50, 100));
-boxes.push(createEntity(200, NATIVE_HEIGHT - 100, 50, 100));
-
 /**
  * Shortens context function names. Example: clearRect becomes ce
  */
-for (const func in context)
+for (const func in context) {
   context[func[0] + (func[6] || func[2])] = context[func];
-for (const func in bufferContext)
   bufferContext[func[0] + (func[6] || func[2])] = bufferContext[func];
+}
 
 /**
  * Taken from https://xem.github.io/articles/jsgamesinputs.html
