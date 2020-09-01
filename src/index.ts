@@ -54,9 +54,11 @@ const gameLoop = (currentTime: number): void => {
 const update = () => {
   switch (screen) {
     case ScreenType.MAIN_MENU:
-      if (keys.e) screen = ScreenType.GAME_LEVEL;
-      currentMap = getMap(level);
-      boxes = getBoxes(currentMap);
+      if (keys.e) {
+        screen = ScreenType.GAME_LEVEL;
+        currentMap = getMap(level);
+        boxes = getBoxes(currentMap);
+      }
       break;
     case ScreenType.GAME_LEVEL:
       if (++counter % 120 == 0) {
