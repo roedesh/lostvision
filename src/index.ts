@@ -23,13 +23,14 @@ import { renderText } from "./font";
 import { getMap, getBoxes } from "./maps";
 import {
   Collision,
-  Keys,
   Echo,
   Entity,
+  Keys,
   ScreenType,
   Tiny2dContext,
 } from "./types";
 
+import flagPng from "../assets/flag.png";
 import heartPng from "../assets/heart.png";
 
 //-------------------------------------------------------------------------
@@ -76,7 +77,7 @@ const update = () => {
         elapsedSeconds++;
       }
       updatePlayer();
-      if (counter % 4 == 0) {
+      if (counter % 2 == 0) {
         if (echo) {
           performStep(echo);
           if (echo.opacity == 0) echo = null;
@@ -148,10 +149,8 @@ const updatePlayer = () => {
 
   if (!previousKeys._ && keys._) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
-    echo = createEcho([tileY - 1, tileX], currentMap);
+    echo = createEcho([tileY - 2, tileX], currentMap);
   }
-
-  
 };
 
 //-------------------------------------------------------------------------
@@ -219,11 +218,7 @@ const render = () => {
       bufferContext.stroke();
       bufferContext.fill();
 
-      // for (const box of boxes) {
-      //   bufferContext.rc(box.x, box.y, box.width, box.height);
-      // }
       if (echo) {
-
         bufferContext.beginPath();
         bufferContext.fillStyle = `rgba(225,225,225,${echo.opacity})`;
         for (const coords of echo.tilesToDraw) {
@@ -231,10 +226,7 @@ const render = () => {
         }
         bufferContext.fill();
       }
-      
-      
 
-      bufferContext.fillStyle = "lightgray";
       const timeString = new Date(elapsedSeconds * 1000)
         .toISOString()
         .substr(11, 8);
@@ -300,6 +292,8 @@ const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
 
 // Assets
+const flagImage = new Image();
+flagImage.src = flagPng;
 const heartImage = new Image();
 heartImage.src = heartPng;
 
