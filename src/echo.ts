@@ -40,12 +40,12 @@ export const performStep = (echo: Echo): void => {
 
 const checkNeighbours = (
   echo: Echo,
-  coords: number[],
+  [y, x]: number[],
 ) => {
-  const north = [coords[0] - 1, coords[1]];
-  const east = [coords[0], coords[1] + 1];
-  const south = [coords[0] + 1, coords[1]];
-  const west = [coords[0], coords[1] - 1];
+  const north = [y - 1, x];
+  const east = [y, x + 1];
+  const south = [y + 1, x];
+  const west = [y, x - 1];
 
   const neighbours = [north, east, south, west];
 
@@ -65,15 +65,15 @@ const checkNeighbours = (
 
 const getTileType = (
   echo: Echo,
-  coords: number[],
+  [y, x]: number[],
 ) => {
   try {
-    const tile = echo.currentMap[coords[0]][coords[1]];
-    const tmpTile = echo.tmpMap[coords[0]][coords[1]];
+    const tile = echo.currentMap[y][x];
+    const tmpTile = echo.tmpMap[y][x];
     if (tmpTile == 2) {
       return -1;
     }
-    echo.tmpMap[coords[0]][coords[1]] = 2;
+    echo.tmpMap[y][x] = 2;
     return tile;
   } catch {
     return -1;
