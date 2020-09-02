@@ -77,6 +77,7 @@ const update = () => {
       if (++counter % 4 == 0) {
         if (echo) {
           performStep(echo);
+          if (echo.opacity == 0) echo = null;
         }
       }
   }
