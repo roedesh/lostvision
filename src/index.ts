@@ -61,6 +61,8 @@ const gameLoop = (currentTime: number): void => {
 //-------------------------------------------------------------------------
 
 const update = () => {
+  ++counter;
+
   switch (screen) {
     case ScreenType.MAIN_MENU:
       if (keys.e) {
@@ -70,11 +72,11 @@ const update = () => {
       }
       break;
     case ScreenType.GAME_LEVEL:
-      if (++counter % 120 == 0) {
+      if (counter % 120 == 0) {
         elapsedSeconds++;
       }
       updatePlayer();
-      if (++counter % 4 == 0) {
+      if (counter % 4 == 0) {
         if (echo) {
           performStep(echo);
           if (echo.opacity == 0) echo = null;
