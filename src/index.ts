@@ -15,11 +15,20 @@ import {
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   PLAYER_WEIGHT,
+  TILE_SIZE,
 } from "./constants";
 import createEntity from "./entity";
+import createEcho, { performStep } from "./echo";
 import { renderText } from "./font";
 import { getMap, getBoxes } from "./maps";
-import { Collision, Keys, Entity, ScreenType, Tiny2dContext } from "./types";
+import {
+  Collision,
+  Keys,
+  Echo,
+  Entity,
+  ScreenType,
+  Tiny2dContext,
+} from "./types";
 
 import heartPng from "../assets/heart.png";
 
@@ -65,6 +74,11 @@ const update = () => {
         elapsedSeconds++;
       }
       updatePlayer();
+      if (++counter % 4 == 0) {
+        if (echo) {
+          performStep(echo);
+        }
+      }
   }
 
   previousKeys = { ...keys };
@@ -128,6 +142,13 @@ const updatePlayer = () => {
       player.velocityX = 0;
     }
   }
+
+  if (!previousKeys._ && keys._) {
+    const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
+    echo = createEcho([tileY - 1, tileX], currentMap);
+  }
+
+  
 };
 
 //-------------------------------------------------------------------------
@@ -158,6 +179,7 @@ const render = () => {
     _.style.transform = `scale(${scaleToFit}) translate(-50%,-50%)`;
 
     // Enable image smoothing for low res screens
+    bufferContext.imageSmoothingEnabled = false;
     context.imageSmoothingEnabled = scaleToFit < 1;
 
     // Set canvas drawing scale
@@ -191,18 +213,31 @@ const render = () => {
       bufferContext.moveTo(0, 32);
       bufferContext.lineTo(NATIVE_WIDTH, 32);
       bufferContext.rc(player.x, player.y, player.width, player.height);
-      for (const box of boxes) {
-        bufferContext.rc(box.x, box.y, box.width, box.height);
-      }
-      bufferContext.fill();
       bufferContext.stroke();
+      bufferContext.fill();
 
+      // for (const box of boxes) {
+      //   bufferContext.rc(box.x, box.y, box.width, box.height);
+      // }
+      if (echo) {
+
+        bufferContext.beginPath();
+        bufferContext.fillStyle = `rgba(225,225,225,${echo.opacity})`;
+        for (const coords of echo.tilesToDraw) {
+          bufferContext.rc(coords[1] * 16, 33 + coords[0] * 16, 16, 16);
+        }
+        bufferContext.fill();
+      }
+      
+      
+
+      bufferContext.fillStyle = "lightgray";
       const timeString = new Date(elapsedSeconds * 1000)
         .toISOString()
         .substr(11, 8);
       renderText(bufferContext, `TIME: ${timeString}`, 8, 8, 14);
 
-      bufferContext.drawImage(heartImage, 175, 6);
+      bufferContext.drawImage(heartImage, 175, 7);
       renderText(bufferContext, "X", 195, 11, 8);
       renderText(bufferContext, `3`, 208, 8, 14);
     }
@@ -244,6 +279,10 @@ const collision = (e1: Entity, e2: Entity): Collision => {
   return null;
 };
 
+const pixelToTileCoordinates = (x: number, y: number): number[] => {
+  return [Math.round(x / TILE_SIZE), Math.round(y / TILE_SIZE)];
+};
+
 //-------------------------------------------------------------------------
 // INITIALIZATION
 //-------------------------------------------------------------------------
@@ -270,6 +309,7 @@ let dpr = 0;
 let innerW,
   innerH = 0;
 let level = 0;
+let echo: Echo;
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;

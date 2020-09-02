@@ -5,6 +5,17 @@ export type Collision = {
   top: boolean;
 };
 
+export type Echo = {
+  origin: number[];
+  tilesToCheck: number[][];
+  tilesToDraw: number[][];
+  currentMap: number[][];
+  tmpMap: number[][];
+  firstRun: boolean;
+  tilesChecked: number;
+  opacity: number;
+};
+
 export type Entity = {
   x: number;
   y: number;
