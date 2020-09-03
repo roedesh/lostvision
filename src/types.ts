@@ -8,12 +8,13 @@ export type Collision = {
 export type Echo = {
   origin: number[];
   tilesToCheck: number[][];
-  tilesToDraw: number[][];
+  tilesToDraw: Tile[];
   currentMap: number[][];
   tmpMap: number[][];
   firstRun: boolean;
   tilesChecked: number;
   opacity: number;
+  runs: number;
 };
 
 export type Entity = {
@@ -47,6 +48,18 @@ export type Map2D = number[][];
 export const enum ScreenType {
   MAIN_MENU,
   GAME_LEVEL,
+}
+
+
+
+export const enum TileType {
+  AIR,
+  GROUND
+}
+
+export type Tile = {
+  type: TileType;
+  coords: number[];
 }
 
 export interface Tiny2dContext extends CanvasRenderingContext2D {

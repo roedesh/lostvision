@@ -76,10 +76,10 @@ const update = () => {
         elapsedSeconds++;
       }
       updatePlayer();
-      if (counter % 3 == 0) {
+      if (counter % 2 == 0) {
         if (echo) {
           performStep(echo);
-          if (echo.opacity == 0) echo = null;
+          if (echo.opacity <= 0) echo = null;
         }
       }
   }
@@ -208,27 +208,22 @@ const render = () => {
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
       break;
     case ScreenType.GAME_LEVEL: {
-      bufferContext.fillStyle = "lightgray";
-      bufferContext.strokeStyle = "lightgray";
-      bufferContext.beginPath();
-      bufferContext.moveTo(0, 32);
-      bufferContext.lineTo(NATIVE_WIDTH, 32);
-      bufferContext.rc(player.x, player.y, player.width, player.height);
-      bufferContext.stroke();
-      bufferContext.fill();
-
       if (echo) {
-        bufferContext.beginPath();
         bufferContext.fillStyle = `rgba(225,225,225,${echo.opacity})`;
-        for (const coords of echo.tilesToDraw) {
-          bufferContext.rc(coords[1] * 16, 33 + coords[0] * 16, 16, 16);
+        bufferContext.beginPath();
+        for (const tile of echo.tilesToDraw) {
+          if (tile.type == 1) {
+            bufferContext.rc(tile.coords[1] * 16, 33 + tile.coords[0] * 16, 16, 16);
+          }
         }
         bufferContext.fill();
 
-        bufferContext.beginPath();
         bufferContext.fillStyle = `rgba(31,31,31,${echo.opacity})`;
-        for (const coords of echo.tilesToCheck) {
-          bufferContext.rc(coords[1] * 16, 33 + coords[0] * 16, 16, 16);
+        bufferContext.beginPath();
+        for (const tile of echo.tilesToDraw) {
+          if (tile.type == 0) {
+            bufferContext.rc(tile.coords[1] * 16, 33 + tile.coords[0] * 16, 16, 16);
+          }
         }
         bufferContext.fill();
       }
@@ -245,6 +240,15 @@ const render = () => {
         8,
         14
       );
+
+      bufferContext.fillStyle = "lightgray";
+      bufferContext.strokeStyle = "lightgray";
+      bufferContext.beginPath();
+      bufferContext.moveTo(0, 32);
+      bufferContext.lineTo(NATIVE_WIDTH, 32);
+      bufferContext.rc(player.x, player.y, player.width, player.height);
+      bufferContext.stroke();
+      bufferContext.fill();
     }
   }
 

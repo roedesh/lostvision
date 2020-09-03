@@ -1,4 +1,4 @@
-import { Echo, Map2D } from "./types";
+import { Echo, Map2D, Tile, TileType } from "./types";
 
 const createMap = () => {
   const array2d = [];
@@ -12,6 +12,11 @@ const createMap = () => {
   return array2d;
 };
 
+const createTile = (type: number, coords: number[]): Tile => ({
+  type,
+  coords,
+});
+
 export default (origin: number[], currentMap: Map2D): Echo => ({
   origin,
   tilesToCheck: [],
@@ -20,21 +25,23 @@ export default (origin: number[], currentMap: Map2D): Echo => ({
   tmpMap: createMap(),
   firstRun: true,
   tilesChecked: 0,
-  opacity: 1,
+  opacity: 1.0,
+  runs: 0,
 });
 
 export const performStep = (echo: Echo): void => {
   if (echo.firstRun) {
     checkNeighbours(echo, echo.origin);
     echo.firstRun = false;
-  } else if (echo.tilesChecked < 900) {
+  } else if (echo.runs < 8) {
     const tiles = [...echo.tilesToCheck];
     echo.tilesToCheck = [];
     for (const tile of tiles) {
       checkNeighbours(echo, tile);
     }
+    echo.runs++;
   } else if (echo.opacity > 0) {
-    echo.opacity -= 0.03;
+    echo.opacity -= 0.025;
   }
 };
 
@@ -61,16 +68,11 @@ const checkNeighbours = (echo: Echo, [y, x]: number[]) => {
 
   for (const neighbour of neighbours) {
     const tile = getTileType(echo, neighbour);
-    switch (tile) {
-      case 0:
-        echo.tilesToCheck.push(neighbour);
-        break;
-      case 1:
-        echo.tilesToDraw.push(neighbour);
-    }
-  }
+    if (tile == -1) continue;
+    else if (tile == TileType.AIR) echo.tilesToCheck.push(neighbour);
 
-  echo.tilesChecked += 4;
+    echo.tilesToDraw.push(createTile(tile, neighbour));
+  }
 };
 
 const getTileType = (echo: Echo, [y, x]: number[]) => {
