@@ -38,16 +38,26 @@ export const performStep = (echo: Echo): void => {
   }
 };
 
-const checkNeighbours = (
-  echo: Echo,
-  [y, x]: number[],
-) => {
+const checkNeighbours = (echo: Echo, [y, x]: number[]) => {
   const north = [y - 1, x];
+  const northEast = [y - 1, x + 1];
   const east = [y, x + 1];
+  const southEast = [y + 1, x + 1];
   const south = [y + 1, x];
+  const southWest = [y + 1, x - 1];
   const west = [y, x - 1];
+  const northWest = [y - 1, x - 1];
 
-  const neighbours = [north, east, south, west];
+  const neighbours = [
+    north,
+    northEast,
+    east,
+    southEast,
+    south,
+    southWest,
+    west,
+    northWest,
+  ];
 
   for (const neighbour of neighbours) {
     const tile = getTileType(echo, neighbour);
@@ -63,10 +73,7 @@ const checkNeighbours = (
   echo.tilesChecked += 4;
 };
 
-const getTileType = (
-  echo: Echo,
-  [y, x]: number[],
-) => {
+const getTileType = (echo: Echo, [y, x]: number[]) => {
   try {
     const tile = echo.currentMap[y][x];
     const tmpTile = echo.tmpMap[y][x];

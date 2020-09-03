@@ -29,7 +29,7 @@ export const levelOne = [
   emptyRow,
   emptyRow,
   emptyRow,
-  emptyRow,
+  "1000000000000000000000000000000000000000000000000111100000000001",
   emptyRow,
   emptyRow,
   emptyRow,

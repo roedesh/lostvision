@@ -31,7 +31,6 @@ import {
 } from "./types";
 
 import flagPng from "../assets/flag.png";
-import heartPng from "../assets/heart.png";
 
 //-------------------------------------------------------------------------
 // MAIN LOOP
@@ -77,7 +76,7 @@ const update = () => {
         elapsedSeconds++;
       }
       updatePlayer();
-      if (counter % 2 == 0) {
+      if (counter % 3 == 0) {
         if (echo) {
           performStep(echo);
           if (echo.opacity == 0) echo = null;
@@ -225,6 +224,13 @@ const render = () => {
           bufferContext.rc(coords[1] * 16, 33 + coords[0] * 16, 16, 16);
         }
         bufferContext.fill();
+
+        bufferContext.beginPath();
+        bufferContext.fillStyle = `rgba(31,31,31,${echo.opacity})`;
+        for (const coords of echo.tilesToCheck) {
+          bufferContext.rc(coords[1] * 16, 33 + coords[0] * 16, 16, 16);
+        }
+        bufferContext.fill();
       }
 
       const timeString = new Date(elapsedSeconds * 1000)
@@ -232,9 +238,13 @@ const render = () => {
         .substr(11, 8);
       renderText(bufferContext, `TIME: ${timeString}`, 8, 8, 14);
 
-      bufferContext.drawImage(heartImage, 175, 7);
-      renderText(bufferContext, "X", 195, 11, 8);
-      renderText(bufferContext, `3`, 208, 8, 14);
+      renderText(
+        bufferContext,
+        `LEVEL: ${("00" + level + 1).slice(-2)}`,
+        200,
+        8,
+        14
+      );
     }
   }
 
@@ -294,8 +304,6 @@ const player = createEntity(100, 100, 16, 16);
 // Assets
 const flagImage = new Image();
 flagImage.src = flagPng;
-const heartImage = new Image();
-heartImage.src = heartPng;
 
 let accumulator = 0;
 let boxes: Entity[] = [];
