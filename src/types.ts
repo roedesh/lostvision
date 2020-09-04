@@ -50,17 +50,25 @@ export const enum ScreenType {
   GAME_LEVEL,
 }
 
-
-
 export const enum TileType {
   AIR,
-  GROUND
+  GROUND,
 }
 
 export type Tile = {
   type: TileType;
   coords: number[];
-}
+};
+
+export type Level = {
+  map: Map2D;
+  boxes: Entity[];
+  flag: Entity;
+  startPosition: {
+    x: number;
+    y: number;
+  };
+};
 
 export interface Tiny2dContext extends CanvasRenderingContext2D {
   /**
@@ -78,6 +86,11 @@ export interface Tiny2dContext extends CanvasRenderingContext2D {
     dw: number,
     dh: number
   ): void;
+
+  /**
+   * Alias to drawImage
+   */
+  da(image: CanvasImageSource, dx: number, dy: number): void;
 
   /**
    * Alias to fillRect
@@ -98,4 +111,19 @@ export interface Tiny2dContext extends CanvasRenderingContext2D {
    * Alias to strokeRect
    */
   sR(x: number, y: number, w: number, h: number): void;
+
+  /**
+   * Alias to moveTo
+   */
+  mv(x: number, y: number): void;
+
+  /**
+   * Alias to stroke
+   */
+  sr(): void;
+
+  /**
+   * Alias to lineTo
+   */
+  ln(x: number, y: number): void;
 }

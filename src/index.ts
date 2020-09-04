@@ -20,7 +20,7 @@ import {
 import createEntity from "./entity";
 import createEcho, { performStep } from "./echo";
 import { renderText } from "./font";
-import { getMap, getBoxes } from "./maps";
+import { getLevel } from "./maps";
 import {
   Collision,
   Echo,
@@ -28,6 +28,7 @@ import {
   Keys,
   ScreenType,
   Tiny2dContext,
+  Level,
 } from "./types";
 
 import flagPng from "../assets/flag.png";
@@ -67,8 +68,9 @@ const update = () => {
     case ScreenType.MAIN_MENU:
       if (keys.e) {
         screen = ScreenType.GAME_LEVEL;
-        currentMap = getMap(level);
-        boxes = getBoxes(currentMap);
+        levelObject = getLevel(level);
+        player.x = levelObject.startPosition.x;
+        player.y = levelObject.startPosition.y;
       }
       break;
     case ScreenType.GAME_LEVEL:
@@ -118,7 +120,7 @@ const updatePlayer = () => {
   if (player.velocityY < GRAVITY) player.velocityY += PLAYER_WEIGHT;
 
   // Check collisions
-  for (const box of boxes) {
+  for (const box of levelObject.boxes) {
     const boxCollision = collision(player, box);
 
     if (
@@ -146,9 +148,20 @@ const updatePlayer = () => {
     }
   }
 
+  if (
+    player.x + player.width < 0 ||
+    player.x > NATIVE_WIDTH ||
+    player.y > NATIVE_HEIGHT
+  ) {
+    player.velocityX = player.velocityY = 0;
+    player.x = levelObject.startPosition.x;
+    player.y = levelObject.startPosition.y;
+    echo = null;
+  }
+
   if (!previousKeys._ && keys._) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
-    echo = createEcho([tileY - 2, tileX], currentMap);
+    echo = createEcho([tileY - 2, tileX], levelObject.map);
   }
 };
 
@@ -179,18 +192,18 @@ const render = () => {
     const scaleToFit = Math.min(scaleX, scaleY);
     _.style.transform = `scale(${scaleToFit}) translate(-50%,-50%)`;
 
-    // Enable image smoothing for low res screens
     bufferContext.imageSmoothingEnabled = false;
+
+    // Enable image smoothing for low res screens
     context.imageSmoothingEnabled = scaleToFit < 1;
 
-    // Set canvas drawing scale
     bufferContext.scale(dpr, dpr);
-  } else {
-    // If the canvas was not reinitialized, just clear it
-    context.clearRect(0, 0, innerW, innerH);
-    bufferContext.clearRect(0, 0, innerW * dpr, innerH * dpr);
   }
 
+  /**
+   * We never clear the canvases since we draw a background every frame,
+   * which will overwrite the previous content.
+   */
   bufferContext.fillStyle = "#121212";
   bufferContext.fc(0, 0, NATIVE_WIDTH, NATIVE_HEIGHT);
 
@@ -210,19 +223,29 @@ const render = () => {
     case ScreenType.GAME_LEVEL: {
       if (echo) {
         bufferContext.fillStyle = `rgba(225,225,225,${echo.opacity})`;
-        bufferContext.beginPath();
+        bufferContext.ba();
         for (const tile of echo.tilesToDraw) {
           if (tile.type == 1) {
-            bufferContext.rc(tile.coords[1] * 16, 33 + tile.coords[0] * 16, 16, 16);
+            bufferContext.rc(
+              tile.coords[1] * 16,
+              32 + tile.coords[0] * 16,
+              16,
+              16
+            );
           }
         }
         bufferContext.fill();
 
         bufferContext.fillStyle = `rgba(31,31,31,${echo.opacity})`;
-        bufferContext.beginPath();
+        bufferContext.ba();
         for (const tile of echo.tilesToDraw) {
-          if (tile.type == 0) {
-            bufferContext.rc(tile.coords[1] * 16, 33 + tile.coords[0] * 16, 16, 16);
+          if (tile.type == 0 || tile.type == 3) {
+            bufferContext.rc(
+              tile.coords[1] * 16,
+              32 + tile.coords[0] * 16,
+              16,
+              16
+            );
           }
         }
         bufferContext.fill();
@@ -241,13 +264,15 @@ const render = () => {
         14
       );
 
+      bufferContext.da(flagImage, levelObject.flag.x, levelObject.flag.y);
+
       bufferContext.fillStyle = "lightgray";
       bufferContext.strokeStyle = "lightgray";
-      bufferContext.beginPath();
-      bufferContext.moveTo(0, 32);
-      bufferContext.lineTo(NATIVE_WIDTH, 32);
+      bufferContext.ba();
+      bufferContext.mv(0, 32);
+      bufferContext.ln(NATIVE_WIDTH, 32);
       bufferContext.rc(player.x, player.y, player.width, player.height);
-      bufferContext.stroke();
+      bufferContext.sr();
       bufferContext.fill();
     }
   }
@@ -310,21 +335,20 @@ const flagImage = new Image();
 flagImage.src = flagPng;
 
 let accumulator = 0;
-let boxes: Entity[] = [];
 let counter = 0;
-let currentMap = [];
 let elapsedSeconds = 0;
 let dpr = 0;
 let innerW,
   innerH = 0;
 let level = 0;
+let levelObject: Level = null;
 let echo: Echo;
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
 
 /**
- * Shortens context function names. Example: clearRect becomes ce
+ * Shortens context function names (e.g. clearRect becomes ce)
  */
 for (const func in context) {
   context[func[0] + (func[6] || func[2])] = context[func];
