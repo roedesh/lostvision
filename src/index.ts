@@ -97,6 +97,14 @@ const updatePlayer = () => {
   player.x += player.velocityX;
   player.y += player.velocityY;
 
+  if (player.y > NATIVE_HEIGHT) {
+    player.velocityX = player.velocityY = 0;
+    player.x = levelObject.startPosition.x;
+    player.y = levelObject.startPosition.y;
+    echo = null;
+    return;
+  }
+
   // Check user input and update velocity
   const direction = (keys.r || 0) - (keys.l || 0);
   player.velocityX += direction * ACCELERATION;
@@ -118,6 +126,8 @@ const updatePlayer = () => {
 
   // Apply gravity
   if (player.velocityY < GRAVITY) player.velocityY += PLAYER_WEIGHT;
+
+  
 
   // Check collisions
   for (const box of levelObject.boxes) {
@@ -148,16 +158,7 @@ const updatePlayer = () => {
     }
   }
 
-  if (
-    player.x + player.width < 0 ||
-    player.x > NATIVE_WIDTH ||
-    player.y > NATIVE_HEIGHT
-  ) {
-    player.velocityX = player.velocityY = 0;
-    player.x = levelObject.startPosition.x;
-    player.y = levelObject.startPosition.y;
-    echo = null;
-  }
+  
 
   if (!previousKeys._ && keys._) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
