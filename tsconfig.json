@@ -8,6 +8,8 @@
     "noEmit": false,
     "sourceMap": false,
     "outDir": "./dist/",
+    "module": "es2020",
+    "moduleResolution": "node",
     "paths": {
       "~*": ["./*"]
     }

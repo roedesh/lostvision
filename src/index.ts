@@ -1,11 +1,11 @@
-// ___       ________  ________  _________        ___      ___ ___  ________  ___  ________  ________      
-// |\  \     |\   __  \|\   ____\|\___   ___\     |\  \    /  /|\  \|\   ____\|\  \|\   __  \|\   ___  \    
-// \ \  \    \ \  \|\  \ \  \___|\|___ \  \_|     \ \  \  /  / | \  \ \  \___|\ \  \ \  \|\  \ \  \\ \  \   
-//  \ \  \    \ \  \\\  \ \_____  \   \ \  \       \ \  \/  / / \ \  \ \_____  \ \  \ \  \\\  \ \  \\ \  \  
-//   \ \  \____\ \  \\\  \|____|\  \   \ \  \       \ \    / /   \ \  \|____|\  \ \  \ \  \\\  \ \  \\ \  \ 
+// ___       ________  ________  _________        ___      ___ ___  ________  ___  ________  ________
+// |\  \     |\   __  \|\   ____\|\___   ___\     |\  \    /  /|\  \|\   ____\|\  \|\   __  \|\   ___  \
+// \ \  \    \ \  \|\  \ \  \___|\|___ \  \_|     \ \  \  /  / | \  \ \  \___|\ \  \ \  \|\  \ \  \\ \  \
+//  \ \  \    \ \  \\\  \ \_____  \   \ \  \       \ \  \/  / / \ \  \ \_____  \ \  \ \  \\\  \ \  \\ \  \
+//   \ \  \____\ \  \\\  \|____|\  \   \ \  \       \ \    / /   \ \  \|____|\  \ \  \ \  \\\  \ \  \\ \  \
 //    \ \_______\ \_______\____\_\  \   \ \__\       \ \__/ /     \ \__\____\_\  \ \__\ \_______\ \__\\ \__\
 //     \|_______|\|_______|\_________\   \|__|        \|__|/       \|__|\_________\|__|\|_______|\|__| \|__|
-//                        \|_________|                                 \|_________|                                                                                                                                  
+//                        \|_________|                                 \|_________|
 //
 //  Author: Ruud Schroën
 
@@ -17,6 +17,7 @@ import {
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   PLAYER_WEIGHT,
+  STORAGE_KEY,
 } from "./constants";
 import createEcho, { performStep } from "./echo";
 import createEntity from "./entity";
@@ -29,6 +30,7 @@ import {
   ScreenType,
   TileType,
   Tiny2dContext,
+  LevelScore,
 } from "./types";
 import { collision, pixelToTileCoordinates } from "./utils";
 
@@ -41,6 +43,8 @@ import flagPng from "../assets/flag.png";
 
 const gameLoop = (currentTime: number): void => {
   window.requestAnimationFrame(gameLoop);
+
+  if (process.env.NODE_ENV === "development") statsMonitor?.begin();
 
   let frameTime = currentTime / 1000 - previousTime;
   if (frameTime > 0.25) {
@@ -57,6 +61,8 @@ const gameLoop = (currentTime: number): void => {
 
   interpolate(accumulator / dt);
   render();
+
+  if (process.env.NODE_ENV === "development") statsMonitor?.end();
 };
 
 //-------------------------------------------------------------------------
@@ -309,6 +315,29 @@ const interpolate = (lagOffset: number) => {
 // INITIALIZATION
 //-------------------------------------------------------------------------
 
+const saveToStorage = () => {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      currentLevel: level,
+      levelScores,
+    })
+  );
+};
+
+const loadFromStorage = () => {
+  const gameStateString = localStorage.getItem(STORAGE_KEY);
+  if (gameStateString) {
+    try {
+      const gameState = JSON.parse(gameStateString);
+      levelScores = gameState.levelScores;
+      level = gameState.currentLevel;
+    } catch {
+      return;
+    }
+  }
+};
+
 const bufferCanvas = document.createElement("canvas");
 const bufferContext = bufferCanvas.getContext("2d", {
   alpha: false,
@@ -333,9 +362,12 @@ let innerW,
   innerH = 0;
 let level = 0;
 let levelObject: Level = null;
+let levelScores: LevelScore[] = [];
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
+
+let statsMonitor = null;
 
 /**
  * Shortens context function names (e.g. clearRect becomes ce)
@@ -353,5 +385,16 @@ onkeydown = onkeyup = (event) =>
   (keys["lurdlRdTl*urEu*_e**s"[(event.which + 3) % 20]] = Number(
     event.type[3] < "u"
   ));
+
+loadFromStorage();
+
+if (process.env.NODE_ENV === "development") {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  import("stats.js").then(({ default: Stats }) => { 
+    statsMonitor = new Stats();
+    document.body.appendChild(statsMonitor.dom);
+  });
+}
 
 window.requestAnimationFrame(gameLoop);

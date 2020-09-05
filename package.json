@@ -11,6 +11,7 @@
     "party": "yarn run build-zipped && yarn run check-file-size"
   },
   "devDependencies": {
+    "@types/stats.js": "^0.17.0",
     "@typescript-eslint/eslint-plugin": "^3.10.1",
     "@typescript-eslint/parser": "^3.10.1",
     "archiver": "^3.0.0",
@@ -18,6 +19,7 @@
     "eslint": "^7.7.0",
     "html-webpack-plugin": "^4.3.0",
     "raw-loader": "^3.0.0",
+    "stats.js": "^0.17.0",
     "terser-webpack-plugin": "^1.3.0",
     "ts-loader": "^8.0.2",
     "tslib": "^2.0.1",
@@ -29,5 +31,6 @@
     "webpack-cli": "^3.3.6",
     "webpack-dev-server": "^3.7.2",
     "webpack-merge": "^5.1.1"
-  }
+  },
+  "dependencies": {}
 }

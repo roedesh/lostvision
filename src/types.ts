@@ -55,6 +55,11 @@ export type Level = {
   };
 };
 
+export type LevelScore = {
+  seconds: number;
+  coinsCollected: number;
+}
+
 export type Map2D = number[][];
 
 export const enum ScreenType {

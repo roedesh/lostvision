@@ -12,3 +12,6 @@ export const JUMP_VELOCITY = -5;
 export const MAX_SPEED = 3;
 export const PLAYER_WEIGHT = 0.2;
 
+// Storage
+export const STORAGE_KEY = "lostvision";
+
