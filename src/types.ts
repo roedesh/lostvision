@@ -9,10 +9,9 @@ export type Echo = {
   origin: number[];
   tilesToCheck: number[][];
   tilesToDraw: Tile[];
-  currentMap: number[][];
   tmpMap: number[][];
+  level: Level;
   firstRun: boolean;
-  tilesChecked: number;
   opacity: number;
   runs: number;
 };
@@ -28,6 +27,8 @@ export type Entity = {
   velocityY: number;
   width: number;
   height: number;
+  hidden: boolean;
+  collected: boolean;
 };
 
 export type Keys = {
@@ -53,6 +54,8 @@ export const enum ScreenType {
 export const enum TileType {
   AIR,
   GROUND,
+  FLAG,
+  COIN,
 }
 
 export type Tile = {
@@ -64,6 +67,7 @@ export type Level = {
   map: Map2D;
   boxes: Entity[];
   flag: Entity;
+  coins: Entity[];
   startPosition: {
     x: number;
     y: number;

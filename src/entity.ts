@@ -5,6 +5,7 @@ export default (
   y: number,
   width: number,
   height: number,
+  hidden = false
 ): Entity => ({
   x,
   y,
@@ -16,6 +17,6 @@ export default (
   velocityY: 0,
   width,
   height,
+  hidden,
+  collected: false,
 });
-
-

@@ -22,7 +22,7 @@ export const levelOne = {
     emptyRow,
     emptyRow,
     emptyRow,
-    emptyRow,
+    "1000000000000000000000000000000000000000000000000000000000000031",
     "1111111111100001111111111111111111111111111111111000011111111111",
     emptyRow,
     emptyRow,
@@ -30,7 +30,7 @@ export const levelOne = {
     emptyRow,
     emptyRow,
     emptyRow,
-    "1000000000000000000000000000000000000000000000000003000000000001",
+    "1000000000000000000000000000000000000000000000000002000000000001",
     "1000000000000000000000000000000000000000000000000111100000000001",
     emptyRow,
     emptyRow,
@@ -77,6 +77,7 @@ export const getLevel = (level: number): Level => {
   const levelObject = levels[level];
   const map = getMap(levelObject);
   const boxes: Entity[] = [];
+  const coins: Entity[] = [];
   let flag: Entity = null;
   map.forEach((row, indexY) => {
     row.forEach((column, indexX) => {
@@ -90,12 +91,23 @@ export const getLevel = (level: number): Level => {
           )
         );
       }
-      if (column == 3) {
+      if (column == 2) {
         flag = createEntity(
           indexX * TILE_SIZE,
           32 + indexY * TILE_SIZE,
           TILE_SIZE,
           TILE_SIZE
+        );
+      }
+      if (column == 3) {
+        coins.push(
+          createEntity(
+            indexX * TILE_SIZE + 4,
+            32 + indexY * TILE_SIZE + 4,
+            8,
+            8,
+            true
+          )
         );
       }
     });
@@ -105,5 +117,6 @@ export const getLevel = (level: number): Level => {
     boxes,
     flag,
     startPosition: levelObject.startPosition,
+    coins,
   };
 };

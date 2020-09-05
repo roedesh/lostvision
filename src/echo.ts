@@ -1,4 +1,6 @@
-import { Echo, Map2D, Tile, TileType } from "./types";
+import createEntity from "./entity";
+import { Echo, Map2D, Tile, TileType, Level } from "./types";
+import { collision } from "./utils";
 
 const createMap = () => {
   const array2d = [];
@@ -17,14 +19,13 @@ const createTile = (type: number, coords: number[]): Tile => ({
   coords,
 });
 
-export default (origin: number[], currentMap: Map2D): Echo => ({
+export default (origin: number[], level: Level): Echo => ({
   origin,
   tilesToCheck: [],
   tilesToDraw: [],
-  currentMap,
+  level,
   tmpMap: createMap(),
   firstRun: true,
-  tilesChecked: 0,
   opacity: 1.0,
   runs: 0,
 });
@@ -41,7 +42,7 @@ export const performStep = (echo: Echo): void => {
     }
     echo.runs++;
   } else if (echo.opacity > 0) {
-    echo.opacity -= 0.025;
+    echo.opacity -= 0.05;
   }
 };
 
@@ -69,7 +70,22 @@ const checkNeighbours = (echo: Echo, [y, x]: number[]) => {
   for (const neighbour of neighbours) {
     const tile = getTileType(echo, neighbour);
     if (tile == -1) continue;
-    else if (tile == TileType.AIR) echo.tilesToCheck.push(neighbour);
+    else if ([TileType.AIR, TileType.COIN, TileType.FLAG].includes(tile))
+      echo.tilesToCheck.push(neighbour);
+
+    if (tile == TileType.COIN) {
+      const temp = createEntity(
+        neighbour[1] * 16,
+        neighbour[0] * 16 + 32,
+        16,
+        16
+      );
+      for (const coin of echo.level.coins) {
+        if (collision(temp, coin)) {
+          coin.hidden = false;
+        }
+      }
+    }
 
     echo.tilesToDraw.push(createTile(tile, neighbour));
   }
@@ -77,7 +93,7 @@ const checkNeighbours = (echo: Echo, [y, x]: number[]) => {
 
 const getTileType = (echo: Echo, [y, x]: number[]) => {
   try {
-    const tile = echo.currentMap[y][x];
+    const tile = echo.level.map[y][x];
     const tmpTile = echo.tmpMap[y][x];
     if (tmpTile == 2) {
       return -1;

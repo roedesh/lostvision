@@ -15,22 +15,22 @@ import {
   NATIVE_HEIGHT,
   NATIVE_WIDTH,
   PLAYER_WEIGHT,
-  TILE_SIZE,
 } from "./constants";
-import createEntity from "./entity";
 import createEcho, { performStep } from "./echo";
+import createEntity from "./entity";
 import { renderText } from "./font";
 import { getLevel } from "./maps";
 import {
-  Collision,
   Echo,
-  Entity,
   Keys,
   ScreenType,
   Tiny2dContext,
   Level,
+  TileType,
 } from "./types";
+import { collision, pixelToTileCoordinates } from "./utils";
 
+import coinPng from "../assets/coin.png";
 import flagPng from "../assets/flag.png";
 
 //-------------------------------------------------------------------------
@@ -78,7 +78,7 @@ const update = () => {
         elapsedSeconds++;
       }
       updatePlayer();
-      if (counter % 2 == 0) {
+      if (counter % 4 == 0) {
         if (echo) {
           performStep(echo);
           if (echo.opacity <= 0) echo = null;
@@ -127,8 +127,6 @@ const updatePlayer = () => {
   // Apply gravity
   if (player.velocityY < GRAVITY) player.velocityY += PLAYER_WEIGHT;
 
-  
-
   // Check collisions
   for (const box of levelObject.boxes) {
     const boxCollision = collision(player, box);
@@ -158,11 +156,9 @@ const updatePlayer = () => {
     }
   }
 
-  
-
   if (!previousKeys._ && keys._) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
-    echo = createEcho([tileY - 2, tileX], levelObject.map);
+    echo = createEcho([tileY - 2, tileX], levelObject);
   }
 };
 
@@ -240,7 +236,9 @@ const render = () => {
         bufferContext.fillStyle = `rgba(31,31,31,${echo.opacity})`;
         bufferContext.ba();
         for (const tile of echo.tilesToDraw) {
-          if (tile.type == 0 || tile.type == 3) {
+          if (
+            [TileType.AIR, TileType.FLAG, TileType.COIN].includes(tile.type)
+          ) {
             bufferContext.rc(
               tile.coords[1] * 16,
               32 + tile.coords[0] * 16,
@@ -267,6 +265,10 @@ const render = () => {
 
       bufferContext.da(flagImage, levelObject.flag.x, levelObject.flag.y);
 
+      for (const coin of levelObject.coins) {
+        if (!coin.hidden) bufferContext.da(coinImage, coin.x, coin.y);
+      }
+
       bufferContext.fillStyle = "lightgray";
       bufferContext.strokeStyle = "lightgray";
       bufferContext.ba();
@@ -287,38 +289,6 @@ const interpolate = (lagOffset: number) => {
 };
 
 //-------------------------------------------------------------------------
-// UTILITIES
-//-------------------------------------------------------------------------
-
-const collision = (e1: Entity, e2: Entity): Collision => {
-  if (
-    e1.x + e1.width >= e2.x &&
-    e1.x <= e2.x + e2.width &&
-    e1.y + e1.height >= e2.y &&
-    e1.y <= e2.y + e2.height
-  ) {
-    const topDiff = e2.y + e2.height - e1.y;
-    const bottomDiff = e1.y + e1.height - e2.y;
-    const leftDiff = e2.x + e2.width - e1.x;
-    const rightDiff = e1.x + e1.width - e2.x;
-
-    const min = Math.min(bottomDiff, topDiff, leftDiff, rightDiff);
-
-    return {
-      bottom: bottomDiff == min,
-      right: rightDiff == min,
-      left: leftDiff == min,
-      top: topDiff == min,
-    };
-  }
-  return null;
-};
-
-const pixelToTileCoordinates = (x: number, y: number): number[] => {
-  return [Math.round(x / TILE_SIZE), Math.round(y / TILE_SIZE)];
-};
-
-//-------------------------------------------------------------------------
 // INITIALIZATION
 //-------------------------------------------------------------------------
 
@@ -332,18 +302,20 @@ const keys: Keys = {};
 const player = createEntity(100, 100, 16, 16);
 
 // Assets
+const coinImage = new Image();
+coinImage.src = coinPng;
 const flagImage = new Image();
 flagImage.src = flagPng;
 
 let accumulator = 0;
 let counter = 0;
+let echo: Echo;
 let elapsedSeconds = 0;
 let dpr = 0;
 let innerW,
   innerH = 0;
 let level = 0;
 let levelObject: Level = null;
-let echo: Echo;
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
