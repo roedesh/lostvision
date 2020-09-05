@@ -6,14 +6,14 @@ export type Collision = {
 };
 
 export type Echo = {
+  firstRun: boolean;
+  level: Level;
+  opacity: number;
   origin: number[];
+  runs: number;
   tilesToCheck: number[][];
   tilesToDraw: Tile[];
   tmpMap: number[][];
-  level: Level;
-  firstRun: boolean;
-  opacity: number;
-  runs: number;
 };
 
 export type Entity = {
@@ -44,6 +44,17 @@ export type Keys = {
   r?: number; // Right
 };
 
+export type Level = {
+  coins: Entity[];
+  boxes: Entity[];
+  flag: Entity;
+  map: Map2D;
+  startPosition: {
+    x: number;
+    y: number;
+  };
+};
+
 export type Map2D = number[][];
 
 export const enum ScreenType {
@@ -51,28 +62,17 @@ export const enum ScreenType {
   GAME_LEVEL,
 }
 
+export type Tile = {
+  type: TileType;
+  coords: number[];
+};
+
 export const enum TileType {
   AIR,
   GROUND,
   FLAG,
   COIN,
 }
-
-export type Tile = {
-  type: TileType;
-  coords: number[];
-};
-
-export type Level = {
-  map: Map2D;
-  boxes: Entity[];
-  flag: Entity;
-  coins: Entity[];
-  startPosition: {
-    x: number;
-    y: number;
-  };
-};
 
 export interface Tiny2dContext extends CanvasRenderingContext2D {
   /**

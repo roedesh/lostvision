@@ -1,5 +1,5 @@
 import createEntity from "./entity";
-import { Echo, Map2D, Tile, TileType, Level } from "./types";
+import { Echo, Level, Tile, TileType } from "./types";
 import { collision } from "./utils";
 
 const createMap = () => {

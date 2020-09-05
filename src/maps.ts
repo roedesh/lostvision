@@ -1,6 +1,6 @@
 import { TILE_SIZE } from "./constants";
 import createEntity from "./entity";
-import { Map2D, Entity, Level } from "./types";
+import { Entity, Level, Map2D } from "./types";
 
 const emptyRow = `1${"0".repeat(62)}1`;
 
@@ -113,10 +113,10 @@ export const getLevel = (level: number): Level => {
     });
   });
   return {
-    map,
     boxes,
-    flag,
-    startPosition: levelObject.startPosition,
     coins,
+    flag,
+    map,
+    startPosition: levelObject.startPosition,
   };
 };

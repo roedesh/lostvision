@@ -1,9 +1,11 @@
-//      ______                _   __      __  ______                      __
-//     / ____/_  _____  _____/ | / /___  / /_/ ____/___  __  ______  ____/ /
-//    / __/ / / / / _ \/ ___/  |/ / __ \/ __/ /_  / __ \/ / / / __ \/ __  /
-//   / /___/ /_/ /  __(__  ) /|  / /_/ / /_/ __/ / /_/ / /_/ / / / / /_/ /
-//  /_____/\__, /\___/____/_/ |_/\____/\__/_/    \____/\__,_/_/ /_/\__,_/
-//        /____/
+// ___       ________  ________  _________        ___      ___ ___  ________  ___  ________  ________      
+// |\  \     |\   __  \|\   ____\|\___   ___\     |\  \    /  /|\  \|\   ____\|\  \|\   __  \|\   ___  \    
+// \ \  \    \ \  \|\  \ \  \___|\|___ \  \_|     \ \  \  /  / | \  \ \  \___|\ \  \ \  \|\  \ \  \\ \  \   
+//  \ \  \    \ \  \\\  \ \_____  \   \ \  \       \ \  \/  / / \ \  \ \_____  \ \  \ \  \\\  \ \  \\ \  \  
+//   \ \  \____\ \  \\\  \|____|\  \   \ \  \       \ \    / /   \ \  \|____|\  \ \  \ \  \\\  \ \  \\ \  \ 
+//    \ \_______\ \_______\____\_\  \   \ \__\       \ \__/ /     \ \__\____\_\  \ \__\ \_______\ \__\\ \__\
+//     \|_______|\|_______|\_________\   \|__|        \|__|/       \|__|\_________\|__|\|_______|\|__| \|__|
+//                        \|_________|                                 \|_________|                                                                                                                                  
 //
 //  Author: Ruud Schroën
 
@@ -23,10 +25,10 @@ import { getLevel } from "./maps";
 import {
   Echo,
   Keys,
-  ScreenType,
-  Tiny2dContext,
   Level,
+  ScreenType,
   TileType,
+  Tiny2dContext,
 } from "./types";
 import { collision, pixelToTileCoordinates } from "./utils";
 
@@ -156,6 +158,10 @@ const updatePlayer = () => {
     }
   }
 
+  for (const coin of levelObject.coins) {
+    if (!coin.collected && collision(player, coin)) coin.collected = true;
+  }
+
   if (!previousKeys._ && keys._) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
     echo = createEcho([tileY - 2, tileX], levelObject);
@@ -263,14 +269,25 @@ const render = () => {
         14
       );
 
+      renderText(
+        bufferContext,
+        `COINS: ${levelObject.coins.filter((coin) => coin.collected).length}/${
+          levelObject.coins.length
+        }}`,
+        350,
+        8,
+        14
+      );
+
       bufferContext.da(flagImage, levelObject.flag.x, levelObject.flag.y);
 
       for (const coin of levelObject.coins) {
-        if (!coin.hidden) bufferContext.da(coinImage, coin.x, coin.y);
+        if (!coin.hidden && !coin.collected)
+          bufferContext.da(coinImage, coin.x, coin.y);
       }
 
-      bufferContext.fillStyle = "lightgray";
-      bufferContext.strokeStyle = "lightgray";
+      bufferContext.fillStyle = "#D3D3D3";
+      bufferContext.strokeStyle = "#D3D3D3";
       bufferContext.ba();
       bufferContext.mv(0, 32);
       bufferContext.ln(NATIVE_WIDTH, 32);
