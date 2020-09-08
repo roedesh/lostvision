@@ -19,7 +19,7 @@ const createTile = (type: number, coords: number[]): Tile => ({
   coords,
 });
 
-export default (origin: number[], level: Level): Echo => ({
+export default (origin: number[], level: Level, noLimit?: boolean): Echo => ({
   origin,
   tilesToCheck: [],
   tilesToDraw: [],
@@ -28,13 +28,14 @@ export default (origin: number[], level: Level): Echo => ({
   firstRun: true,
   opacity: 1.0,
   runs: 0,
+  noLimit,
 });
 
 export const performStep = (echo: Echo): void => {
   if (echo.firstRun) {
     checkNeighbours(echo, echo.origin);
     echo.firstRun = false;
-  } else if (echo.runs < 8) {
+  } else if ((echo.noLimit && echo.tilesToCheck.length > 0) || (echo.runs < 8)) {
     const tiles = [...echo.tilesToCheck];
     echo.tilesToCheck = [];
     for (const tile of tiles) {

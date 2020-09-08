@@ -14,6 +14,7 @@ export type Echo = {
   tilesToCheck: number[][];
   tilesToDraw: Tile[];
   tmpMap: number[][];
+  noLimit?: boolean;
 };
 
 export type Entity = {
@@ -30,6 +31,11 @@ export type Entity = {
   hidden: boolean;
   collected: boolean;
 };
+
+export const enum GameMode {
+  EXPLORER,
+  MEMORIZER,
+}
 
 export type Keys = {
   E?: number; // E
@@ -58,12 +64,13 @@ export type Level = {
 export type LevelScore = {
   seconds: number;
   coinsCollected: number;
-}
+};
 
 export type Map2D = number[][];
 
 export const enum ScreenType {
   MAIN_MENU,
+  GAME_MODE_SELECTION,
   HOW_TO_PLAY,
   GAME_LEVEL,
 }

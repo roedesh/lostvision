@@ -27,6 +27,7 @@ import { renderText } from "./font";
 import { getLevel } from "./maps";
 import {
   Echo,
+  GameMode,
   Keys,
   Level,
   ScreenType,
@@ -76,20 +77,28 @@ const update = () => {
 
   switch (screen) {
     case ScreenType.MAIN_MENU:
-      if (!previousKeys.u && keys.u) menuSelector--;
-      if (!previousKeys.d && keys.d) menuSelector++;
+      checkMenuSelector(1);
       if (!previousKeys.e && keys.e) {
         if (menuSelector) {
           screen = ScreenType.HOW_TO_PLAY;
         } else {
-          screen = ScreenType.GAME_LEVEL;
-          levelObject = getLevel(level);
-          player.x = levelObject.startPosition.x;
-          player.y = levelObject.startPosition.y;
+          screen = ScreenType.GAME_MODE_SELECTION;
+          // levelObject = getLevel(level);
+          // player.x = levelObject.startPosition.x;
+          // player.y = levelObject.startPosition.y;
         }
+        menuSelector = 0;
       }
-      if (menuSelector > 1) menuSelector = 0;
-      if (menuSelector < 0) menuSelector = 1;
+      break;
+    case ScreenType.GAME_MODE_SELECTION:
+      checkMenuSelector(1);
+      if (!previousKeys.e && keys.e) {
+        gameMode = menuSelector;
+        levelObject = getLevel(level);
+        player.x = levelObject.startPosition.x;
+        player.y = levelObject.startPosition.y;
+        screen = ScreenType.GAME_LEVEL;
+      }
       break;
     case ScreenType.HOW_TO_PLAY:
       if (!previousKeys.e && keys.e) {
@@ -113,6 +122,13 @@ const update = () => {
   previousKeys = { ...keys };
 };
 
+const checkMenuSelector = (max: number) => {
+  if (!previousKeys.u && keys.u) menuSelector--;
+  if (!previousKeys.d && keys.d) menuSelector++;
+  if (menuSelector > max) menuSelector = 0;
+  if (menuSelector < 0) menuSelector = 1;
+};
+
 const updatePlayer = () => {
   player.oldX = player.x;
   player.oldY = player.y;
@@ -125,7 +141,17 @@ const updatePlayer = () => {
     player.velocityX = player.velocityY = 0;
     player.x = levelObject.startPosition.x;
     player.y = levelObject.startPosition.y;
-    echo = null;
+    if (gameMode == GameMode.MEMORIZER) {
+      const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
+      echo = createEcho(
+        [tileY - 2, tileX],
+        levelObject,
+        gameMode == GameMode.MEMORIZER
+      );
+    } else {
+      echo = null;
+    }
+
     return;
   }
 
@@ -198,10 +224,18 @@ const updatePlayer = () => {
     player.y = levelObject.startPosition.y;
   }
 
-  if (!previousKeys._ && keys._) {
+  if (
+    (gameMode == GameMode.EXPLORER && !previousKeys._ && keys._) ||
+    (gameMode == GameMode.MEMORIZER && !memorizerEchoUsed)
+  ) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
-    echo = createEcho([tileY - 2, tileX], levelObject);
+    echo = createEcho(
+      [tileY - 2, tileX],
+      levelObject,
+      gameMode == GameMode.MEMORIZER
+    );
   }
+  if (!memorizerEchoUsed) memorizerEchoUsed = true;
 };
 
 //-------------------------------------------------------------------------
@@ -250,22 +284,7 @@ const render = () => {
     case ScreenType.MAIN_MENU: {
       renderText(bufferContext, "LOST VISION", 130, 180, 80);
 
-      bufferContext.fillStyle = bufferContext.strokeStyle = WHITE;
-      bufferContext.beginPath();
-      bufferContext.rc(380, 309, 20, 20);
-      bufferContext.rc(380, 359, 20, 20);
-      bufferContext.sr();
-      const selectorIndicatorY = menuSelector ? 362 : 312;
-      bufferContext.fc(383, selectorIndicatorY, 14, 14);
-
-      renderText(
-        bufferContext,
-        level > 0 ? "CONTINUE GAME" : "START GAME",
-        410,
-        310,
-        18
-      );
-      renderText(bufferContext, "HOW TO PLAY", 410, 360, 18);
+      renderMenu(400, 309, menuSelector, ["START GAME", "HOW TO PLAY"]);
 
       renderText(
         bufferContext,
@@ -275,6 +294,11 @@ const render = () => {
         14
       );
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
+      break;
+    }
+    case ScreenType.GAME_MODE_SELECTION: {
+      renderText(bufferContext, "SELECT GAME MODE", 80, 60, 30);
+      renderMenu(85, 140, menuSelector, ["EXPLORER", "MEMORIZER"]);
       break;
     }
     case ScreenType.HOW_TO_PLAY:
@@ -418,6 +442,22 @@ const render = () => {
   context.da(bufferCanvas, 0, 0, NATIVE_WIDTH * dpr, NATIVE_HEIGHT * dpr);
 };
 
+const renderMenu = (
+  x: number,
+  y: number,
+  selectedIndex: number,
+  menuEntries: string[]
+) => {
+  bufferContext.fillStyle = bufferContext.strokeStyle = WHITE;
+  menuEntries.forEach((entry, idx) => {
+    bufferContext.sR(x, y + idx * 45, 20, 20);
+    if (idx == selectedIndex) {
+      bufferContext.fc(x + 3, y + idx * 45 + 3, 14, 14);
+    }
+    renderText(bufferContext, entry, x + 30, y + idx * 45 + 1, 18);
+  });
+};
+
 const interpolate = (lagOffset: number) => {
   player.renderX = (player.x - player.oldX) * lagOffset + player.oldX;
   player.renderY = (player.y - player.oldY) * lagOffset + player.oldY;
@@ -472,9 +512,11 @@ let elapsedSeconds = 0;
 let dpr = 0;
 let innerW,
   innerH = 0;
+let gameMode: GameMode;
 let level = 0;
 let levelObject: Level = null;
 let levelScores: LevelScore[] = [];
+let memorizerEchoUsed = false;
 let menuSelector = 0;
 let previousKeys: Keys = {};
 let previousTime = 0;
