@@ -18,6 +18,7 @@ import {
   NATIVE_WIDTH,
   PLAYER_WEIGHT,
   STORAGE_KEY,
+  WHITE,
 } from "./constants";
 import createEcho, { performStep } from "./echo";
 import createEntity from "./entity";
@@ -74,7 +75,12 @@ const update = () => {
 
   switch (screen) {
     case ScreenType.MAIN_MENU:
-      if (keys.e) {
+      if (keys.R) {
+        level = 0;
+        levelScores = [];
+        saveToStorage();
+      }
+      if (keys.R || keys.e) {
         screen = ScreenType.GAME_LEVEL;
         levelObject = getLevel(level);
         player.x = levelObject.startPosition.x;
@@ -168,6 +174,20 @@ const updatePlayer = () => {
     if (!coin.collected && collision(player, coin)) coin.collected = true;
   }
 
+  if (levelObject.flag && collision(player, levelObject.flag)) {
+    levelScores.push({
+      seconds: elapsedSeconds,
+      coinsCollected: levelObject.coins.filter((coin) => coin.collected).length,
+    });
+    level++;
+    saveToStorage();
+    elapsedSeconds = 0;
+    counter = 0;
+    levelObject = getLevel(level);
+    player.x = levelObject.startPosition.x;
+    player.y = levelObject.startPosition.y;
+  }
+
   if (!previousKeys._ && keys._) {
     const [tileX, tileY] = pixelToTileCoordinates(player.x, player.y);
     echo = createEcho([tileY - 2, tileX], levelObject);
@@ -219,7 +239,13 @@ const render = () => {
   switch (screen) {
     case ScreenType.MAIN_MENU:
       renderText(bufferContext, "LOST VISION", 130, 180, 80);
-      renderText(bufferContext, "PRESS ENTER TO START", 320, 310, 24);
+      if (level > 0) {
+        renderText(bufferContext, "PRESS ENTER TO CONTINUE", 300, 310, 24);
+        renderText(bufferContext, "OR PRESS R TO RESTART", 420, 350, 12);
+      } else {
+        renderText(bufferContext, "PRESS ENTER TO START", 320, 310, 24);
+      }
+
       renderText(
         bufferContext,
         "CREATED BY RUUD SCHROEN",
@@ -267,13 +293,7 @@ const render = () => {
         .substr(11, 8);
       renderText(bufferContext, `TIME: ${timeString}`, 8, 8, 14);
 
-      renderText(
-        bufferContext,
-        `LEVEL: ${("00" + level + 1).slice(-2)}`,
-        200,
-        8,
-        14
-      );
+      renderText(bufferContext, `LEVEL: ${level + 1}`, 200, 8, 14);
 
       renderText(
         bufferContext,
@@ -285,15 +305,15 @@ const render = () => {
         14
       );
 
-      bufferContext.da(flagImage, levelObject.flag.x, levelObject.flag.y);
+      levelObject.flag &&
+        bufferContext.da(flagImage, levelObject.flag.x, levelObject.flag.y);
 
       for (const coin of levelObject.coins) {
         if (!coin.hidden && !coin.collected)
           bufferContext.da(coinImage, coin.x, coin.y);
       }
 
-      bufferContext.fillStyle = "#D3D3D3";
-      bufferContext.strokeStyle = "#D3D3D3";
+      bufferContext.fillStyle = bufferContext.strokeStyle = WHITE;
       bufferContext.ba();
       bufferContext.mv(0, 32);
       bufferContext.ln(NATIVE_WIDTH, 32);
@@ -366,7 +386,6 @@ let levelScores: LevelScore[] = [];
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;
-
 let statsMonitor = null;
 
 /**
@@ -391,8 +410,10 @@ loadFromStorage();
 if (process.env.NODE_ENV === "development") {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  import("stats.js").then(({ default: Stats }) => { 
+  import("stats.js").then(({ default: Stats }) => {
     statsMonitor = new Stats();
+    statsMonitor.dom.style.left = "auto";
+    statsMonitor.dom.style.right = "0px";
     document.body.appendChild(statsMonitor.dom);
   });
 }

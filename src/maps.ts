@@ -44,7 +44,47 @@ export const levelOne = {
   ],
 };
 
-const levels = [levelOne];
+export const levelTwo = {
+  startPosition: { x: 100, y: 200 },
+  tiles: [
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    "1000000000000000000000000000000000000000000000000000000000000031",
+    "1111111111100001111111111111111111111111111111111000011111111111",
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    "1000000000000000000000000000000000000000000000000000000000000001",
+    "1000000000000000000000000000000000000000000000000111100000000001",
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+    emptyRow,
+  ],
+};
+
+const levels = [levelOne, levelTwo];
 
 const getMap = (levelObject): Map2D => {
   const map2d = [];
