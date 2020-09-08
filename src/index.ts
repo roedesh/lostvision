@@ -12,6 +12,7 @@
 import {
   ACCELERATION,
   GRAVITY,
+  GREEN,
   JUMP_VELOCITY,
   MAX_SPEED,
   NATIVE_HEIGHT,
@@ -75,16 +76,25 @@ const update = () => {
 
   switch (screen) {
     case ScreenType.MAIN_MENU:
-      if (keys.R) {
-        level = 0;
-        levelScores = [];
-        saveToStorage();
+      if (!previousKeys.u && keys.u) menuSelector--;
+      if (!previousKeys.d && keys.d) menuSelector++;
+      if (!previousKeys.e && keys.e) {
+        if (menuSelector) {
+          screen = ScreenType.HOW_TO_PLAY;
+        } else {
+          screen = ScreenType.GAME_LEVEL;
+          levelObject = getLevel(level);
+          player.x = levelObject.startPosition.x;
+          player.y = levelObject.startPosition.y;
+        }
       }
-      if (keys.R || keys.e) {
-        screen = ScreenType.GAME_LEVEL;
-        levelObject = getLevel(level);
-        player.x = levelObject.startPosition.x;
-        player.y = levelObject.startPosition.y;
+      if (menuSelector > 1) menuSelector = 0;
+      if (menuSelector < 0) menuSelector = 1;
+      break;
+    case ScreenType.HOW_TO_PLAY:
+      if (!previousKeys.e && keys.e) {
+        menuSelector = 0;
+        screen = ScreenType.MAIN_MENU;
       }
       break;
     case ScreenType.GAME_LEVEL:
@@ -237,14 +247,25 @@ const render = () => {
   bufferContext.fc(0, 0, NATIVE_WIDTH, NATIVE_HEIGHT);
 
   switch (screen) {
-    case ScreenType.MAIN_MENU:
+    case ScreenType.MAIN_MENU: {
       renderText(bufferContext, "LOST VISION", 130, 180, 80);
-      if (level > 0) {
-        renderText(bufferContext, "PRESS ENTER TO CONTINUE", 300, 310, 24);
-        renderText(bufferContext, "OR PRESS R TO RESTART", 420, 350, 12);
-      } else {
-        renderText(bufferContext, "PRESS ENTER TO START", 320, 310, 24);
-      }
+
+      bufferContext.fillStyle = bufferContext.strokeStyle = WHITE;
+      bufferContext.beginPath();
+      bufferContext.rc(380, 309, 20, 20);
+      bufferContext.rc(380, 359, 20, 20);
+      bufferContext.sr();
+      const selectorIndicatorY = menuSelector ? 362 : 312;
+      bufferContext.fc(383, selectorIndicatorY, 14, 14);
+
+      renderText(
+        bufferContext,
+        level > 0 ? "CONTINUE GAME" : "START GAME",
+        410,
+        310,
+        18
+      );
+      renderText(bufferContext, "HOW TO PLAY", 410, 360, 18);
 
       renderText(
         bufferContext,
@@ -254,6 +275,77 @@ const render = () => {
         14
       );
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
+      break;
+    }
+    case ScreenType.HOW_TO_PLAY:
+      renderText(bufferContext, "HOW TO PLAY", 80, 60, 30);
+      renderText(
+        bufferContext,
+        "YOU HAVE LOST YOUR SIGHT, BUT GAINED THE POWER OF ECHOLOCATING.",
+        80,
+        140,
+        16
+      );
+      renderText(
+        bufferContext,
+        "WHEN YOU START, YOU WILL NOT BE ABLE TO SEE THE PATH YOU NEED TO TAKE.",
+        80,
+        190,
+        16
+      );
+      renderText(bufferContext, "BY PRESSING", 80, 220, 16);
+      renderText(bufferContext, "SPACE", 226, 220, 16, GREEN);
+      renderText(
+        bufferContext,
+        "YOU CAN TEMPORARILY REVEAL THE SPACE AROUND YOU.",
+        296,
+        220,
+        16
+      );
+
+      renderText(
+        bufferContext,
+        "WHEN YOU KNOW WHERE TO GO, USE THE",
+        80,
+        270,
+        16
+      );
+      renderText(
+        bufferContext,
+        "WASD, ZQSD OR ARROW KEYS",
+        502,
+        270,
+        16,
+        GREEN
+      );
+      renderText(bufferContext, "TO MOVE", 808, 270, 16);
+      renderText(
+        bufferContext,
+        "AND JUMP AROUND. YOU NEED TO REACH THE",
+        80,
+        300,
+        16
+      );
+      bufferContext.da(flagImage, 540, 300);
+      renderText(bufferContext, "TO ADVANCE TO THE NEXT LEVEL.", 562, 300, 16);
+
+      renderText(
+        bufferContext,
+        "THERE ARE ALSO HIDDEN COINS TO BE FOUND, WHICH YOU CAN REVEAL",
+        80,
+        350,
+        16
+      );
+      renderText(bufferContext, "WITH YOUR ECHO.", 80, 380, 16);
+
+      renderText(
+        bufferContext,
+        "PRESS ENTER TO RETURN TO THE MAIN MENU",
+        80,
+        430,
+        16,
+        GREEN
+      );
       break;
     case ScreenType.GAME_LEVEL: {
       if (echo) {
@@ -383,6 +475,7 @@ let innerW,
 let level = 0;
 let levelObject: Level = null;
 let levelScores: LevelScore[] = [];
+let menuSelector = 0;
 let previousKeys: Keys = {};
 let previousTime = 0;
 let screen: ScreenType = ScreenType.MAIN_MENU;

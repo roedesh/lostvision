@@ -64,6 +64,7 @@ export type Map2D = number[][];
 
 export const enum ScreenType {
   MAIN_MENU,
+  HOW_TO_PLAY,
   GAME_LEVEL,
 }
 

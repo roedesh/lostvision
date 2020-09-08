@@ -3,7 +3,8 @@ export const NATIVE_WIDTH = 1024;
 export const NATIVE_HEIGHT = 576;
 
 // Colors
-export const WHITE = "#D3D3D3"
+export const GREEN = "#6ab04c";
+export const WHITE = "#d3d3d3";
 
 // Entity
 export const TILE_SIZE = 16;
@@ -17,4 +18,3 @@ export const PLAYER_WEIGHT = 0.2;
 
 // Storage
 export const STORAGE_KEY = "lostvision";
-
