@@ -35,7 +35,7 @@ export const performStep = (echo: Echo): void => {
   if (echo.firstRun) {
     checkNeighbours(echo, echo.origin);
     echo.firstRun = false;
-  } else if ((echo.noLimit && echo.tilesToCheck.length > 0) || (echo.runs < 8)) {
+  } else if ((echo.noLimit && echo.tilesToCheck[0]) || (echo.runs < 8)) {
     const tiles = [...echo.tilesToCheck];
     echo.tilesToCheck = [];
     for (const tile of tiles) {
@@ -43,7 +43,7 @@ export const performStep = (echo: Echo): void => {
     }
     echo.runs++;
   } else if (echo.opacity > 0) {
-    echo.opacity -= 0.05;
+    echo.opacity -= 0.025;
   }
 };
 

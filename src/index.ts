@@ -83,9 +83,6 @@ const update = () => {
           screen = ScreenType.HOW_TO_PLAY;
         } else {
           screen = ScreenType.GAME_MODE_SELECTION;
-          // levelObject = getLevel(level);
-          // player.x = levelObject.startPosition.x;
-          // player.y = levelObject.startPosition.y;
         }
         menuSelector = 0;
       }
@@ -111,7 +108,7 @@ const update = () => {
         elapsedSeconds++;
       }
       updatePlayer();
-      if (counter % 4 == 0) {
+      if (counter % 2 == 0) {
         if (echo) {
           performStep(echo);
           if (echo.opacity <= 0) echo = null;
@@ -281,11 +278,10 @@ const render = () => {
   bufferContext.fc(0, 0, NATIVE_WIDTH, NATIVE_HEIGHT);
 
   switch (screen) {
+
     case ScreenType.MAIN_MENU: {
       renderText(bufferContext, "LOST VISION", 130, 180, 80);
-
       renderMenu(400, 309, menuSelector, ["START GAME", "HOW TO PLAY"]);
-
       renderText(
         bufferContext,
         "CREATED BY RUUD SCHROEN",
@@ -296,11 +292,24 @@ const render = () => {
       renderText(bufferContext, "JS13K 2020", 884, NATIVE_HEIGHT - 44, 14);
       break;
     }
+
     case ScreenType.GAME_MODE_SELECTION: {
       renderText(bufferContext, "SELECT GAME MODE", 80, 60, 30);
       renderMenu(85, 140, menuSelector, ["EXPLORER", "MEMORIZER"]);
+      if (menuSelector > 0) {
+        renderText(bufferContext, "YOU GET A SINGLE ECHO AT THE START OF THE", 425, 140, 16);
+        renderText(bufferContext, "LEVEL WHICH WILL TEMPORARILY REVEAL THE", 425, 170, 16);
+        renderText(bufferContext, "ENTIRE LEVEL. AFTER THIS, YOU WILL NEED", 425, 200, 16);
+        renderText(bufferContext, "TO NAVIGATE THE LEVEL FROM MEMORY.", 425, 230, 16);
+        renderText(bufferContext, "IF YOU DIE, YOU WILL GET A NEW ECHO.", 425, 280, 16);
+      } else {
+        renderText(bufferContext, "YOU CAN PERFORM AN ECHO AT WILL, WHICH", 425, 140, 16);
+        renderText(bufferContext, "WILL TEMPORARILY REVEAL THE SPACE AROUND", 425, 170, 16);
+        renderText(bufferContext, "YOU.", 425, 200, 16);
+      }
       break;
     }
+
     case ScreenType.HOW_TO_PLAY:
       renderText(bufferContext, "HOW TO PLAY", 80, 60, 30);
       renderText(
@@ -371,6 +380,7 @@ const render = () => {
         GREEN
       );
       break;
+      
     case ScreenType.GAME_LEVEL: {
       if (echo) {
         bufferContext.fillStyle = `rgba(225,225,225,${echo.opacity})`;
