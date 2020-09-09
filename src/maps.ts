@@ -113,7 +113,7 @@ export const getBoxes = (map: Map2D): Entity[] => {
   return boxes;
 };
 
-export const getLevel = (level: number): Level => {
+export const getLevel = (level: number, skipCoins?: boolean): Level => {
   const levelObject = levels[level];
   const map = getMap(levelObject);
   const boxes: Entity[] = [];
@@ -139,7 +139,7 @@ export const getLevel = (level: number): Level => {
           TILE_SIZE
         );
       }
-      if (column == 3) {
+      if (!skipCoins && column == 3) {
         coins.push(
           createEntity(
             indexX * TILE_SIZE + 4,
