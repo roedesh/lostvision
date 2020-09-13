@@ -124,7 +124,7 @@ export const levelThree = {
   ],
 };
 
-const levels = [levelOne, levelTwo, levelThree];
+export const levels = [levelOne, levelTwo, levelThree];
 
 const getMap = (levelObject): Map2D => {
   const map2d = [];

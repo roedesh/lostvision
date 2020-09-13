@@ -73,6 +73,7 @@ export const enum ScreenType {
   GAME_MODE_SELECTION,
   HOW_TO_PLAY,
   GAME_LEVEL,
+  GAME_FINISHED,
 }
 
 export type Tile = {

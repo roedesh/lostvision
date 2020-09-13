@@ -24,7 +24,7 @@ import {
 import createEcho, { performStep } from "./echo";
 import createEntity from "./entity";
 import { renderText } from "./font";
-import { getLevel } from "./maps";
+import { getLevel, levels } from "./maps";
 import {
   Echo,
   GameMode,
@@ -113,6 +113,14 @@ const update = () => {
           performStep(echo);
           if (echo.opacity <= 0) echo = null;
         }
+      }
+      break;
+    case ScreenType.GAME_FINISHED:
+      if (keys.e) {
+        level = 0;
+        levelScores = [];
+        saveToStorage();
+        screen = ScreenType.MAIN_MENU;
       }
   }
 
@@ -212,8 +220,17 @@ const updatePlayer = () => {
       seconds: elapsedSeconds,
       coinsCollected: levelObject.coins.filter((coin) => coin.collected).length,
     });
-    level++;
-    saveToStorage();
+
+    if (level + 1 >= levels.length) {
+      level = 0;
+      saveToStorage();
+      screen = ScreenType.GAME_FINISHED;
+      return;
+    } else {
+      level++;
+      saveToStorage();
+    }
+
     elapsedSeconds = 0;
     counter = 0;
     levelObject = getLevel(level, gameMode == GameMode.MEMORIZER);
@@ -280,7 +297,10 @@ const render = () => {
   switch (screen) {
     case ScreenType.MAIN_MENU: {
       renderText(bufferContext, "LOST VISION", 130, 180, 80);
-      renderMenu(400, 309, menuSelector, ["START GAME", "HOW TO PLAY"]);
+      renderMenu(400, 309, menuSelector, [
+        level > 0 ? "CONTINUE GAME" : "START GAME",
+        "HOW TO PLAY",
+      ]);
       renderText(
         bufferContext,
         "CREATED BY RUUD SCHROEN",
@@ -495,6 +515,30 @@ const render = () => {
       bufferContext.rc(player.x, player.y, player.width, player.height);
       bufferContext.sr();
       bufferContext.fill();
+      break;
+    }
+    case ScreenType.GAME_FINISHED: {
+      renderText(bufferContext, "CONGRATULATIONS!", 80, 60, 30);
+      renderText(bufferContext, "YOU HAVE FINISHED THE GAME!", 80, 140, 16);
+      const coinsCollected = levelScores.reduce((totalCoins, levelScore) => {
+        return (totalCoins += levelScore.coinsCollected);
+      }, 0);
+      gameMode == GameMode.EXPLORER &&
+        renderText(
+          bufferContext,
+          `YOU HAVE COLLECTED ${coinsCollected} COINS!`,
+          80,
+          170,
+          16
+        );
+      renderText(
+        bufferContext,
+        "PRESS ENTER TO RETURN TO THE MAIN MENU",
+        80,
+        230,
+        16,
+        GREEN
+      );
     }
   }
 
